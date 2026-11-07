@@ -1,18 +1,8 @@
-# Yingo 路由映射：本文件与 netlify.toml 的 [[redirects]] 完全一致。
-# Netlify 两处都支持重定向：_redirects 优先级更高，故两份清单必须同步修改。
-# 三个函数纯只读，API 仅转发到函数 bundle，无写端点。
-
-# 1) API（必须最前）
-/api/*    /.netlify/functions/:splat    200
-
-# 2) 防泄露：以下路径不在 publish 内，显式 404，避免被 SPA 回退成 200。
-#    /404.html 不存在时 Netlify 返回平台默认 404 页；不生成目录列表。
-/config.json    /404.html    404
-/config.local.json    /404.html    404
-/netlify/functions/config.json    /404.html    404
-/netlify/*    /404.html    404
-/assets    /404.html    404
-/assets/    /404.html    404
-
-# 3) SPA 回退（必须最后）
-/*    /index.html    200
+# YingoTab 重定向（与 netlify.toml 保持一致；_redirects 优先级更高）
+/api/generate-config   /.netlify/functions/generate-config   200
+/config.json           /404.html   404
+/config.local.json     /404.html   404
+/netlify/*             /404.html   404
+/assets                /404.html   404
+/assets/               /404.html   404
+/*                     /index.html 200

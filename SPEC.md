@@ -825,3 +825,26 @@ export function getMetrics(); // 命中率、占用、GC 次数
 
 > **v1.3 变更**：用户授权「全部自主完成」→ 文档批准、§14 剩余项由 ADR-013 自主定案（A/C 语义、分组 taxonomy、主题视觉、token 最小权限），并按 §12 落地实现。
 > **v1.2 变更（第 7/8 轮共 8 问均已回答）**：介质改为三层（去 Cache API）、云端改为纯本地（去 PUT / remote / `CONFIG_ADMIN_TOKEN`）、插件不设配额、静态资源缓存交给 Netlify（新增 ADR-011）、备份改为 JSON 导入导出、「缓存」语义收敛 + 文件浏览器（ADR-012）；三个函数全部只读；同步更新目录树、命令表、错误码、CORS 矩阵、交付与验收清单；清理此前「超时默认」残留（重复 D28~D31、重复 ADR-011、旧登记表）。
+
+---
+
+## ADR-014 项目转型：开源框架 + 内容仓库生态（v2.0 · 2026-11-07）
+
+**决策**：YingoTab 转向 Apache-2.0 开源框架，架构全面重塑：
+
+1. **框架与内容分离**
+   - 主仓 `yingo`：纯框架，不含任何应用/音乐数据
+   - 内容仓库（`yingo-template` 模板 / `yingo-base` 基础应用 / `yingome` 音乐 / 用户自建）：根目录 `yingotab.yml` 清单，CI（workflow_dispatch）扫描 `apps/*/app.json`（JSON 优先，目录名兜底）与 `music/` 生成
+   - 设置支持多仓库 URL 按顺序合并，id 去重先到先得
+
+2. **三种拉取模式**：`jsdelivr`（公开仓 CDN）/ `pages`（任意静态站点：GitHub Pages / Netlify / Vercel，吃平台 CDN）/ `ghproxy`（raw 前缀代理）
+
+3. **UI 转清风风**：全屏壁纸 + 大时钟 + 搜索胶囊 + 底部 Dock + 右侧设置抽屉；「壁纸即主题」，三套固定主题机制移除，壁纸框架预留动态渲染器接口（视频/three.js）
+
+4. **内置模块重整**：clock / search / wallpaper / weather（Open-Meteo + ipwho.is，可固定区域）/ dock / music-player / settings；apps-grid、theme-manager、admin 移除（功能并入 dock 与 settings）
+
+5. **函数收敛**：删除私有 apps/music/config 三函数，仅保留公有 `generate-config`（合并清单只读接口）；CI 不主动触发
+
+6. **应用加载**：jsDeliv/raw 的 text/plain HTML 经 fetch+`<base>`+`iframe.srcdoc` 渲染；pages 模式直连
+
+**后果**：主仓 38MB→0.4MB（音频迁往 yingome）；私有信息（域名/Site ID/部署文档）全部移除；生态可社区共建。

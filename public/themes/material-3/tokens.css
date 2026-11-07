@@ -1,9 +1,0 @@
-/* ============================================================
-   主题 · 严格 Material Design 3 —— 皮肤差异
-   MD3 的颜色/圆角/阴影已在全局 tokens.css 作为默认值实现，
-   本文件只做 MD3 特有的强调（tonal surface、涟漪式过渡）。
-   ============================================================ */
-.y-module-apps-grid-card { transition: transform var(--yingo-dur-fast) var(--yingo-ease), box-shadow var(--yingo-dur) var(--yingo-ease); }
-.y-module-apps-grid-card:hover { transform: translateY(-2px); }
-.y-mp-btn:active, .y-module-search-submit:active { filter: brightness(.94); }
-.yingo-slot--topbar { border-bottom-color: transparent; box-shadow: var(--yingo-shadow-1); }

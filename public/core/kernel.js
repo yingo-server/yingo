@@ -123,7 +123,7 @@ function stageCore(options, rec) {
   const overlay = makeOverlay();
   registerSlot('overlay', overlay);
   // 主内容流
-  for (const name of ['topbar', 'search', 'apps', 'music', 'theme']) {
+  for (const name of ['clock', 'search', 'widgets', 'dock', 'music']) {
     const n = document.createElement('section');
     n.className = `yingo-slot yingo-slot--${name}`;
     n.dataset.slot = name;
@@ -155,7 +155,7 @@ function stageCore(options, rec) {
   });
   const topbarSlot = root.querySelector?.('.yingo-slot--topbar');
   (topbarSlot || root).appendChild(toggle);
-  rec.modules.push('bus', 'errors', 'slot:overlay', 'slot:topbar/search/apps/music/theme', 'slot:drawer(admin/settings/panel/sidebar/main)');
+  rec.modules.push('bus', 'errors', 'slot:overlay', 'slot:clock/search/widgets/dock/music', 'slot:drawer(admin/settings/panel/sidebar/main)');
 }
 
 function makeOverlay() {
@@ -189,22 +189,11 @@ function stageDiagnostics(options, rec) {
 }
 
 async function stageTheme(options, rec) {
-  const themes = options.themes || [];
-  for (const t of themes) {
-    try {
-      defineModule(t.manifest);
-      const ctx = createModuleContext(t.manifest);
-      await t.factory.init(ctx);
-      setModuleState(t.manifest.id, 'ready');
-      rec.modules.push(`theme:${t.manifest.id}`);
-    } catch (err) {
-      await isolate(t.manifest?.id || 'theme', 'theme', err);
-    }
-  }
-  // 读取持久化主题并应用
-  const saved = await emit('storage:get', { path: '/shared/theme/current.json', fallback: null }).catch(() => null);
-  const id = getService('flags').theme || saved?.id || options.config?.themes?.default || 'material-3';
-  await emit('theme:apply', { id }).catch(() => {});
+  // 壁纸即主题：恢复壁纸设置，交给 wallpaper 模块渲染（核心只读配置）
+  const saved = await emit('storage:get', { path: '/shared/wallpaper.json', fallback: null }).catch(() => null);
+  registerService('wallpaper', saved || { mode: 'builtin', id: 'aurora' }, 'kernel');
+  if (saved) await emit('wallpaper:changed', saved).catch(() => {});
+  rec.modules.push('wallpaper-config');
 }
 
 async function stageServices(options, rec) {
@@ -212,37 +201,14 @@ async function stageServices(options, rec) {
   // 配置服务（config:get / config:set）
   initConfigService(options.config || {});
   // 应用/音乐/主题/模块服务（apps:list、music:list、theme:apply ...）
-  initAppServices({
-    themes: (options.themes || []).map((t) => t.manifest?.id).filter(Boolean),
-  });
-  // 主题服务定位别名：模块可 ctx.getService('theme') 取命令式接口
-  registerService('theme', {
-    list: () => emit('theme:list', {}),
-    apply: (id) => emit('theme:apply', { id }),
-    setBackground: (p) => emit('theme:bg-set', p),
+  initAppServices({});
+  // 注册壁纸服务定位别名
+  registerService('wallpaper-service', {
+    get: () => emit('wallpaper:get', {}),
+    set: (p) => emit('wallpaper:set', p),
   }, 'kernel');
-  // 清单镜像写入 /system/*（来自预引导缓存/网络，代码侧零额外请求）
-  for (const [name, data, path] of [
-    ['registry', options.registry, '/system/registry.json'],
-    ['music', options.music, '/system/music.json'],
-  ]) {
-    if (data && typeof data === 'object') {
-      try {
-        await emit('storage:set', { path, value: data, schema: 'manifest-mirror@1' });
-        rec.modules.push(`mirror:${name}`);
-      } catch { /* 镜像失败不阻断 */ }
-    } else {
-      // 回退：尝试从静态路径读取（Netlify 无函数时的兼容路径）
-      try {
-        const res = await fetch(`/${name}.json`, { cache: 'default' });
-        if (res.ok) {
-          await emit('storage:set', { path, value: await res.json(), schema: 'manifest-mirror@1' });
-          rec.modules.push(`mirror:${name}`);
-        }
-      } catch { /* 清单缺失不阻断，函数侧会兜底 */ }
-    }
-  }
-  rec.modules.push('config-service', 'apps-service', 'music-service', 'theme-service', 'module-service');
+  // 内容仓库清单由 yingotab 引擎自管缓存（app-services 内），不再写 /system/* 镜像
+  rec.modules.push('config-service', 'apps-service', 'music-service', 'widgets-service', 'repos-service', 'wallpaper-service', 'module-service');
 }
 
 async function stageModules(options, rec) {

@@ -1,9 +1,0 @@
-/* ============================================================
-   主题 · 青柠标签页 —— 皮肤差异（暗色玻璃 + 自定义背景 + 青柠点缀）
-   背景图变量 --yingo-bg-image 可被管理面板覆盖。
-   ============================================================ */
-:root[data-yingo-theme="lime-tabs"] .y-module-apps-grid-card { background: var(--yingo-surface); }
-.yingo-slot--topbar { border-bottom-color: var(--yingo-outline-variant); }
-.yingo-drawer-toggle { box-shadow: 0 4px 16px rgba(0, 0, 0, .5); }
-.y-mp-cover { background: rgba(163, 230, 53, .16); }
-.y-module-apps-grid-card:hover { border-color: var(--yingo-primary); box-shadow: 0 6px 20px rgba(0, 0, 0, .5); }

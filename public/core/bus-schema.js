@@ -91,12 +91,15 @@ const SCHEMAS = {
   'config:get': { payload: { key: 'string' }, description: '读公开配置' },
   'config:set': { payload: { key: 'string', value: 'any' }, permission: 'config:write', description: '写用户配置（本地 VFS）' },
 
-  'theme:list': { payload: {}, description: '列出主题' },
-  'theme:apply': { payload: { id: 'string' }, description: '应用主题' },
-  'theme:bg-set': { payload: { url: 'string', blur: 'number?', tint: 'string?' }, permission: 'theme:write', description: '第三套背景参数' },
 
-  'apps:list': { payload: { filter: 'object?' }, description: '应用清单' },
+  'apps:list': { payload: { filter: 'object?' }, description: '应用清单（内容仓库合并）' },
   'apps:reload': { payload: {}, description: '重载清单' },
+  'widgets:list': { payload: {}, description: '中部组件清单' },
+  'repos:list': { payload: {}, description: '内容仓库列表' },
+  'repos:set': { payload: { repos: 'array' }, description: '设置内容仓库' },
+  'wallpaper:get': { payload: {}, description: '读取壁纸配置' },
+  'wallpaper:set': { payload: { mode: 'string', id: 'string?', url: 'string?', blur: 'number?', tint: 'string?' }, description: '设置壁纸' },
+  'wallpaper:changed': { payload: { mode: 'string', id: 'string?', url: 'string?', blur: 'number?', tint: 'string?' }, description: '壁纸变更广播' },
 
   'search:submit': { payload: { engine: 'string', query: 'string' }, description: '跳转外部引擎' },
   'search:filter': { payload: { query: 'string' }, description: '本地应用/音乐过滤' },

@@ -11,7 +11,7 @@ import { musicIcon } from './icons.js';
 
 const MODULE_ID = 'music-player';
 const STYLE_ID = 'yingo-style-music-player';
-const SLOT_NAMES = ['bottombar', 'music', 'root'];
+const SLOT_NAMES = ['music', 'dock', 'root'];
 const STATE_PATH = '/shared/music/state.json';
 const STATE_SCHEMA = 'music-state@1';
 

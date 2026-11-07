@@ -1,7 +1,5 @@
-# Yingo 逐路径响应头（Netlify _headers）
-# 目录列表：Netlify 无目录索引文件即 404，且 _redirects 对目录路径显式返回 404；
-# 本文件再用 nosniff / CSP / 无索引标记收紧，不部署任何自动生成的目录页。
-# publish 内不存在任何 config.json；下列路径由 _redirects 返回 404，此处仅补 no-store / noindex。
+# Yingo 逐路径响应头
+# API：CORS 全开；框架源码：immutable 长缓存；防泄露：config 函数侧配置不可达。
 
 /*
   X-Content-Type-Options: nosniff
@@ -10,37 +8,7 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Access-Control-Allow-Origin: *
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; worker-src 'none'; manifest-src 'self'; form-action 'self' https:;
-  # 默认：短缓存（用于 HTML 等可能变化的入口）
-  Cache-Control: public, max-age=60, stale-while-revalidate=300
-
-# 框架源码：内容稳定，长缓存 + 后台校验，二次访问几乎零请求
-/core/*
-  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
-  X-Content-Type-Options: nosniff
-/modules/*
-  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
-  X-Content-Type-Options: nosniff
-/themes/*
-  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
-  X-Content-Type-Options: nosniff
-/layouts/*
-  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
-  X-Content-Type-Options: nosniff
-/styles/*
-  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
-  X-Content-Type-Options: nosniff
-
-# 构建产物清单：允许短缓存 + 后台更新（前端另有 6h localStorage 预引导缓存）
-/registry.json
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
-  X-Content-Type-Options: nosniff
-/music.json
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
-  X-Content-Type-Options: nosniff
-
-# 首页：短缓存即可（体积小）
-/index.html
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; frame-src blob: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https:; worker-src 'none'; manifest-src 'self'; form-action 'self' https:;
   Cache-Control: public, max-age=60, stale-while-revalidate=300
 
 /api/*
@@ -48,33 +16,26 @@
   Access-Control-Allow-Methods: GET, OPTIONS
   Access-Control-Allow-Headers: Content-Type
   Access-Control-Max-Age: 86400
-  Access-Control-Expose-Headers: Allow
-  Allow: GET,OPTIONS
-  Vary: Origin
   Cache-Control: public, max-age=300
   X-Content-Type-Options: nosniff
-  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
 
 /assets/*
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=31536000, immutable
   X-Content-Type-Options: nosniff
-  Timing-Allow-Origin: *
+
+/core/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
+/modules/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
+/styles/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
 
 /config.json
   Cache-Control: no-store
-  X-Robots-Tag: noindex, nofollow
-  X-Content-Type-Options: nosniff
-  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
+  X-Robots-Tag: noindex
+  Content-Security-Policy: default-src 'none'
 
 /config.local.json
   Cache-Control: no-store
-  X-Robots-Tag: noindex, nofollow
-  X-Content-Type-Options: nosniff
-  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
-
-/netlify/functions/config.json
-  Cache-Control: no-store
-  X-Robots-Tag: noindex, nofollow
-  X-Content-Type-Options: nosniff
-  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
+  X-Robots-Tag: noindex

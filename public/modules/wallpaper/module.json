@@ -1,0 +1,15 @@
+{
+  "id": "wallpaper",
+  "level": 6,
+  "entry": "./index.js",
+  "permissions": [
+    "storage:read:shared",
+    "storage:write:shared",
+    "config:read",
+    "apps:read",
+    "music:read"
+  ],
+  "hooks": [],
+  "layout": "self-decided",
+  "optional": false
+}

@@ -1,216 +1,145 @@
 /* ============================================================
-   Yingo · Base / Reset / 全局骨架
+   YingoTab · Base / 骨架
+   壁纸层（模块渲染）→ 色调层 → 内容（时钟/搜索居中，Dock 吸底，抽屉右侧）
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; }
-
 html { -webkit-text-size-adjust: 100%; }
-
 body {
   margin: 0;
   min-height: 100dvh;
-  font-family: var(--yingo-font);
-  font-size: var(--yingo-fs-md);
+  font-family: var(--yt-font);
+  font-size: 14px;
   line-height: 1.6;
-  color: var(--yingo-on-surface);
-  background: var(--yingo-bg);
+  color: var(--yt-text);
   -webkit-font-smoothing: antialiased;
-  transition: background var(--yingo-dur), color var(--yingo-dur);
 }
-
-/* 自定义背景图层（lime-tabs / 管理面板）：独立伪元素，blur 不影响内容 */
-body::before {
+body::after {           /* 色调压暗层（壁纸模块设置 --yingo-wallpaper-tint） */
   content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: var(--yingo-bg-image);
-  background-size: cover;
-  background-position: center;
-  filter: blur(var(--yingo-bg-blur)) saturate(1.15);
-  transform: scale(1.06);          /* 防止 blur 边缘露白 */
-  pointer-events: none;
-}
-body::after {                      /* 色调压暗层 */
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: var(--yingo-bg-tint);
+  position: fixed; inset: 0;
+  z-index: var(--yt-z-tint);
+  background: var(--yingo-wallpaper-tint, transparent);
   pointer-events: none;
 }
 
-img, svg, video { max-width: 100%; height: auto; }
-
-a { color: var(--yingo-primary); text-decoration: none; }
-a:hover { text-decoration: underline; text-underline-offset: 3px; }
-
-::selection { background: var(--yingo-primary); color: var(--yingo-on-primary); }
-
-/* ---- 通用控件外观（全局唯一定义处） ---- */
-button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; background: none; border: 0; padding: 0; }
-input, textarea { background: none; }
+img { max-width: 100%; }
+a { color: var(--yt-accent); text-decoration: none; }
+button { cursor: pointer; background: none; border: 0; padding: 0; font: inherit; color: inherit; }
+input, select, textarea { font: inherit; color: inherit; background: none; border: 0; }
 input:focus, textarea:focus, select:focus { outline: none; }
 :disabled { opacity: .4; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--yt-accent); outline-offset: 2px; }
 
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
-a:focus-visible, [tabindex]:focus-visible {
-  outline: 2px solid var(--yingo-primary);
-  outline-offset: 2px;
-}
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; }
+*::-webkit-scrollbar { width: 6px; }
+*::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 99px; }
 
-/* 系统滚动条（webkit + firefox） */
-* { scrollbar-width: thin; scrollbar-color: var(--yingo-outline-variant) transparent; }
-*::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-thumb { background: var(--yingo-outline-variant); border-radius: 99px; }
-*::-webkit-scrollbar-track { background: transparent; }
-
-/* ---- 毛玻璃表面（统一质感） ---- */
+/* 玻璃表面 */
 .glass {
-  background: var(--yingo-glass-bg);
-  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  border: 1px solid var(--yingo-glass-border);
+  background: var(--yt-glass);
+  -webkit-backdrop-filter: blur(var(--yt-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--yt-blur)) saturate(1.35);
+  border: 1px solid var(--yt-glass-border);
+  box-shadow: var(--yt-shadow);
 }
 
 /* ============================================================
-   页面骨架：顶栏吸顶 / 主列居中 / 音乐坞吸底 / 抽屉右侧
+   主骨架：垂直流（时钟 → 搜索 → 组件区），Dock 吸底，抽屉右侧
    ============================================================ */
 #yingo-root {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: var(--yt-z-content);
+  padding-bottom: calc(var(--yt-sp-7) + 96px);   /* 给 Dock 留位 */
 }
-
 .yingo-slot { width: 100%; display: flex; flex-direction: column; align-items: center; }
-.yingo-slot > .y-module { width: 100%; }
-
-.yingo-slot--topbar {
-  position: sticky;
-  top: 0;
-  z-index: var(--yingo-z-topbar);
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--yingo-topbar-h);
-  padding: 0 var(--yingo-sp-5);
-  background: var(--yingo-glass-bg);
-  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  border-bottom: 1px solid var(--yingo-outline-variant);
-}
-
-.yingo-slot--search { padding: var(--yingo-sp-7) var(--yingo-sp-4) var(--yingo-sp-5); }
-
-.yingo-slot--apps   { padding: 0 var(--yingo-sp-4) var(--yingo-sp-5); }
-
-.yingo-slot--music,
-.yingo-slot--theme  { padding: 0 var(--yingo-sp-4); }
-
-/* 底部留出音乐坞固定高度 */
-#yingo-root { padding-bottom: calc(var(--yingo-dock-h) + var(--yingo-sp-5)); }
-
-/* ---- 音乐坞：悬浮玻璃卡，吸底居中 ---- */
-.yingo-slot--music {
+.yingo-slot--clock    { padding-top: max(11dvh, var(--yt-sp-7)); }
+.yingo-slot--search   { padding: var(--yt-sp-5) var(--yt-sp-4) var(--yt-sp-6); }
+.yingo-slot--widgets  { padding: 0 var(--yt-sp-4) var(--yt-sp-6); flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.yingo-slot--dock     {
   position: fixed;
-  bottom: calc(var(--yingo-sp-4) + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(var(--yingo-dock-w), calc(100vw - 2 * var(--yingo-sp-4)));
-  z-index: var(--yingo-z-dock);
+  bottom: calc(var(--yt-sp-5) + env(safe-area-inset-bottom, 0px));
+  left: 50%; transform: translateX(-50%);
+  width: var(--yt-dock-w);
+  z-index: var(--yt-z-dock);
 }
+.yingo-slot--music    {
+  position: fixed;
+  bottom: calc(var(--yt-sp-4) + env(safe-area-inset-bottom, 0px));
+  left: 50%; transform: translateX(-50%) translateY(64px);
+  width: var(--yt-dock-w);
+  z-index: calc(var(--yt-z-dock) - 1);
+  opacity: 0; visibility: hidden;
+  transition: transform var(--yt-dur) var(--yt-ease), opacity var(--yt-dur), visibility 0s var(--yt-dur);
+}
+html[data-yt-music-open] .yingo-slot--music {
+  transform: translateX(-50%);
+  opacity: 1; visibility: visible;
+  transition: transform var(--yt-dur) var(--yt-ease), opacity var(--yt-dur);
+}
+.yingo-slot--theme    { display: none; }    /* 主题机制并入设置，此槽保留兼容 */
 
-/* ---- 抽屉：右侧滑入 ---- */
+/* 抽屉 */
 .yingo-slot--drawer {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(var(--yingo-drawer-w), 92vw);
-  z-index: var(--yingo-z-drawer);
-  padding: var(--yingo-sp-5);
+  top: 0; right: 0; bottom: 0;
+  width: var(--yt-drawer-w);
+  z-index: var(--yt-z-drawer);
+  padding: var(--yt-sp-5);
   overflow-y: auto;
-  background: var(--yingo-glass-bg);
-  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  border-left: 1px solid var(--yingo-glass-border);
-  box-shadow: var(--yingo-shadow-3);
+  background: var(--yt-glass-strong);
+  -webkit-backdrop-filter: blur(var(--yt-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--yt-blur)) saturate(1.35);
+  border-left: 1px solid var(--yt-glass-border);
+  box-shadow: var(--yt-shadow-lg);
   transform: translateX(100%);
   visibility: hidden;
-  transition: transform var(--yingo-dur) var(--yingo-ease), visibility 0s var(--yingo-dur);
+  transition: transform var(--yt-dur) var(--yt-ease), visibility 0s var(--yt-dur);
 }
 .yingo-slot--drawer[data-collapsed="false"] {
-  transform: none;
-  visibility: visible;
-  transition: transform var(--yingo-dur) var(--yingo-ease), visibility 0s;
-}
-.yingo-slot--drawer > .y-module { height: 100%; }
-
-/* 顶栏内：齿轮靠右、时钟紧邻其左（覆盖 clock 模块的内联样式） */
-.yingo-slot--topbar > .y-module-clock {
-  margin-left: auto !important;
-  margin-right: 0;
-  text-align: right !important;
-  align-items: flex-end;
-}
-.yingo-slot--topbar > .yingo-drawer-toggle { margin-left: var(--yingo-sp-3); margin-right: 0; }
-
-@media (prefers-reduced-motion: reduce) {
-  .yingo-slot--drawer, body::before { transition: none; }
+  transform: none; visibility: visible;
+  transition: transform var(--yt-dur) var(--yt-ease), visibility 0s;
 }
 
-/* ---- 抽屉开关：顶栏内、时钟左侧的小圆钮 ---- */
-.yingo-drawer-toggle {
-  position: static;
-  width: 36px;
-  height: 36px;
-  flex: none;
-  margin-right: var(--yingo-sp-3);
-  margin-left: auto;
-  border-radius: var(--yingo-radius-pill);
-  display: grid;
-  place-items: center;
-  font-size: var(--yingo-fs-md);
-  color: var(--yingo-on-surface);
-  opacity: .75;
-  transition: opacity var(--yingo-dur-fast), transform var(--yingo-dur-fast);
-}
-.yingo-drawer-toggle:hover { opacity: 1; transform: scale(1.06); }
-.yingo-drawer-toggle[aria-expanded="true"] { opacity: 1; }
-
-/* ---- 遮罩 ---- */
+/* 遮罩 */
 #yingo-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: calc(var(--yingo-z-drawer) - 1);
-  background: var(--yingo-scrim);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--yingo-dur), visibility 0s var(--yingo-dur);
+  position: fixed; inset: 0;
+  z-index: calc(var(--yt-z-drawer) - 1);
+  background: var(--yt-scrim);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--yt-dur), visibility 0s var(--yt-dur);
 }
 #yingo-overlay[data-visible="true"] {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity var(--yingo-dur);
+  opacity: 1; visibility: visible;
+  transition: opacity var(--yt-dur);
 }
 
-/* ---- 模块失败占位 ---- */
+/* 顶栏齿轮（时钟右上角），打开抽屉 */
+.yingo-drawer-toggle {
+  position: fixed;
+  top: var(--yt-sp-4);
+  right: var(--yt-sp-4);
+  z-index: var(--yt-z-dock);
+  width: 40px; height: 40px;
+  border-radius: var(--yt-radius-pill);
+  display: grid; place-items: center;
+  font-size: 18px;
+  color: var(--yt-text);
+  opacity: .75;
+  transition: opacity var(--yt-dur-fast), transform var(--yt-dur-fast);
+}
+.yingo-drawer-toggle:hover { opacity: 1; transform: rotate(30deg); }
+.yingo-drawer-toggle[aria-expanded="true"] { opacity: 1; }
+
+/* 模块失败占位 */
 .y-module-fallback {
-  display: grid;
-  place-items: center;
-  min-height: 72px;
-  border: 1px dashed var(--yingo-outline);
-  border-radius: var(--yingo-radius-md);
-  color: var(--yingo-on-surface-variant);
-  font-size: var(--yingo-fs-sm);
+  display: grid; place-items: center;
+  min-height: 64px; padding: var(--yt-sp-3) var(--yt-sp-4);
+  border: 1px dashed var(--yt-glass-border);
+  border-radius: var(--yt-radius-md);
+  color: var(--yt-text-soft);
+  font-size: 12px;
   cursor: pointer;
-}
-.y-module-fallback:hover { color: var(--yingo-on-surface); border-color: var(--yingo-primary); }
-
-/* ---- 窄视口 ---- */
-@media (max-width: 640px) {
-  :root { --yingo-dock-h: 108px; }
-  .yingo-slot--topbar { padding: 0 var(--yingo-sp-4); }
-  .yingo-slot--search { padding-top: var(--yingo-sp-6); }
 }

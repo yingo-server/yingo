@@ -2,8 +2,14 @@
   "id": "clock",
   "level": 6,
   "entry": "./index.js",
-  "permissions": [],
-  "hooks": ["after:modules", "error:modules"],
+  "permissions": [
+    "storage:read:shared",
+    "storage:write:shared",
+    "config:read",
+    "apps:read",
+    "music:read"
+  ],
+  "hooks": [],
   "layout": "self-decided",
   "optional": false
 }

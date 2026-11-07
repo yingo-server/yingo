@@ -1,46 +1,61 @@
 /**
- * app-services.js — 应用/音乐/主题/模块服务（总线命令 handler）
- * 第一阶段：清单从 /system/* 镜像读（函数只读供给），业务算法留空壳。
- * 所有状态写回 Storage Fabric，不直接碰原生 API。
+ * app-services.js — 应用/音乐/组件/壁纸/模块服务（总线命令 handler）
+ * 应用与音乐来自内容仓库（yingotab.yml）合并；壁纸即主题；组件（天气等）为内置模块。
  */
 
 import { on, emit } from './bus.js';
 import { listModules, setModuleState, getModule } from './module-api.js';
 import { makeError, E } from './errors.js';
+import { loadRepos, getUserRepos, DEFAULT_REPOS } from './yingotab.js';
 
-const DEFAULT_GROUPS = ['simulation', 'game', 'tool', 'media', 'ai', 'social', 'other'];
+const GROUPS = ['dock', 'grid'];
+
+/** 应用/音乐合并清单（loadRepos 结果缓存在内存，避免每次命令都拉网络） */
+let manifestCache = null;
+
+async function getManifest(force = false) {
+  if (!force && manifestCache) return manifestCache;
+  const repos = await getUserRepos();
+  const { merged, errors, fromCache } = await loadRepos(repos);
+  manifestCache = merged;
+  if (errors?.length) {
+    emit('notify:push', {
+      level: 'warn',
+      message: `部分内容仓库拉取失败（${errors.length} 个）`,
+      detail: { errors, fromCache },
+    }).catch(() => {});
+  }
+  return merged;
+}
 
 export function initAppServices(options = {}) {
-  /* ---- 应用清单 ---- */
+  /* ---- 应用清单（来自内容仓库合并） ---- */
   on('apps:list', async ({ filter } = {}) => {
-    const reg = (await emit('storage:get', { path: '/system/registry.json', fallback: null })) || options.registry || {};
-    let apps = Array.isArray(reg.apps) ? reg.apps : [];
+    const m = await getManifest();
+    let apps = Array.isArray(m.apps) ? m.apps : [];
     const f = filter || {};
-    if (f.group) apps = apps.filter((a) => a.group === f.group);
+    if (f.type) apps = apps.filter((a) => (a.type || 'dock') === f.type);
     if (f.q) {
       const q = String(f.q).toLowerCase();
-      apps = apps.filter((a) =>
-        [a.name, a.id, a.description, ...(a.tags || [])].filter(Boolean).join(' ').toLowerCase().includes(q));
+      apps = apps.filter((a) => [a.name, a.id, a.description, ...(a.tags || [])]
+        .filter(Boolean).join(' ').toLowerCase().includes(q));
     }
-    return { version: reg.version || 1, apps, groups: reg.groups || DEFAULT_GROUPS };
+    return { version: m.version || 1, apps, groups: GROUPS };
   });
 
   on('apps:reload', async () => {
-    try {
-      const res = await fetch('/registry.json', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        await emit('storage:set', { path: '/system/registry.json', value: data, schema: 'manifest-mirror@1' });
-        return data;
-      }
-    } catch { /* 保留旧镜像 */ }
-    return emit('apps:list', {});
+    manifestCache = null;
+    return getManifest(true);
   });
 
-  /* ---- 音乐清单 ---- */
+  /* ---- 音乐清单（来自内容仓库合并） ---- */
   on('music:list', async () => {
-    const m = (await emit('storage:get', { path: '/system/music.json', fallback: null })) || options.music || {};
-    return { version: m.version || 1, tracks: Array.isArray(m.tracks) ? m.tracks : [] };
+    const m = await getManifest();
+    const tracks = (Array.isArray(m.music) ? m.music : []).map((t) => ({
+      ...t,
+      file: t.url || t.file,     // 播放器读 file 字段
+    }));
+    return { version: m.version || 1, tracks };
   });
 
   on('music:play', async ({ id, index } = {}) => {
@@ -52,33 +67,47 @@ export function initAppServices(options = {}) {
   });
 
   on('music:state', async ({ state }) => {
-    await emit('storage:set', {
-      path: '/shared/music/state.json', value: state, schema: 'music-state@1',
-    });
+    await emit('storage:set', { path: '/shared/music/state.json', value: state, schema: 'music-state@1' });
     return state;
   });
 
-  /* ---- 主题 ---- */
-  const themes = (options.themes?.length ? options.themes : ['material-3', 'neumorphism', 'lime-tabs']);
-  on('theme:list', async () => ({ themes: themes.map((id) => ({ id })) }));
-
-  on('theme:apply', async ({ id }) => {
-    const themeId = themes.includes(id) ? id : (themes[0] || 'material-3');
-    document.documentElement?.setAttribute?.('data-yingo-theme', themeId);
-    await emit('storage:set', {
-      path: '/shared/theme/current.json', value: { id: themeId }, schema: 'theme-state@1',
-    }).catch(() => {});
-    return themeId;
+  /* ---- 中部组件（天气/便签等，来自合并清单 widgets 或内置注册） ---- */
+  on('widgets:list', async () => {
+    const m = await getManifest();
+    return { widgets: Array.isArray(m.widgets) ? m.widgets : [] };
   });
 
-  on('theme:bg-set', async ({ url, blur, tint }) => {
-    const value = { url, blur: blur ?? 18, tint: tint ?? 'rgba(0,0,0,.25)', updatedAt: Date.now() };
-    await emit('storage:set', {
-      path: '/shared/theme/bg.json', value, schema: 'theme-bg@1',
-    });
-    document.documentElement?.style?.setProperty?.('--yingo-bg-image', `url("${url}")`);
-    if (blur != null) document.documentElement?.style?.setProperty?.('--yingo-bg-blur', `${blur}px`);
-    if (tint) document.documentElement?.style?.setProperty?.('--yingo-bg-tint', tint);
+  /* ---- 内容仓库管理（设置界面用） ---- */
+  on('repos:list', async () => {
+    const repos = await getUserRepos();
+    return { repos, defaults: DEFAULT_REPOS };
+  });
+
+  on('repos:set', async ({ repos }) => {
+    if (!Array.isArray(repos)) throw makeError(E.E_SCHEMA, 'repos 必须是数组');
+    for (const r of repos) {
+      if (!r?.url) throw makeError(E.E_SCHEMA, '每个仓库条目需要 url');
+      if (!['jsdelivr', 'ghproxy', 'pages'].includes(r.mode)) {
+        throw makeError(E.E_SCHEMA, `未知模式 ${r.mode}（可选 jsdelivr/ghproxy/pages）`);
+      }
+    }
+    await emit('storage:set', { path: '/shared/repos.json', value: { repos }, schema: 'user-config@1' });
+    manifestCache = null;    // 立即失效，下次 apps:list 重新拉取
+    return getManifest(true);
+  });
+
+  /* ---- 壁纸即主题 ---- */
+  on('wallpaper:get', async () => {
+    const saved = await emit('storage:get', { path: '/shared/wallpaper.json', fallback: null });
+    return saved || { mode: 'builtin', id: 'aurora', blur: 0, tint: 'transparent' };
+  });
+
+  on('wallpaper:set', async ({ mode, id, url, blur, tint }) => {
+    if (!['builtin', 'custom', 'dynamic'].includes(mode)) {
+      throw makeError(E.E_SCHEMA, `未知壁纸模式 ${mode}（builtin/custom/dynamic）`);
+    }
+    const value = { mode, id, url, blur: blur ?? 0, tint: tint ?? 'transparent', updatedAt: Date.now() };
+    await emit('storage:set', { path: '/shared/wallpaper.json', value, schema: 'user-config@1' });
     return value;
   });
 
@@ -101,5 +130,5 @@ export function initAppServices(options = {}) {
     return id ? all.filter((m) => m.id === id) : all;
   });
 
-  return { groups: DEFAULT_GROUPS };
+  return { groups: GROUPS };
 }

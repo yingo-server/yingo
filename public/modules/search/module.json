@@ -2,8 +2,14 @@
   "id": "search",
   "level": 6,
   "entry": "./index.js",
-  "permissions": ["config:read", "apps:read", "music:read", "storage:write:shared"],
-  "hooks": ["after:modules", "after:userland", "error:modules"],
+  "permissions": [
+    "storage:read:shared",
+    "storage:write:shared",
+    "config:read",
+    "apps:read",
+    "music:read"
+  ],
+  "hooks": [],
   "layout": "self-decided",
   "optional": false
 }

@@ -1,9 +1,0 @@
-{
-  "id": "apps-grid",
-  "level": 6,
-  "entry": "./index.js",
-  "permissions": ["apps:read"],
-  "hooks": ["after:modules", "error:modules"],
-  "layout": "self-decided",
-  "optional": false
-}

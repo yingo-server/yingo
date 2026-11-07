@@ -1,9 +1,0 @@
-{
-  "id": "theme-manager",
-  "level": 6,
-  "entry": "./index.js",
-  "permissions": ["config:read", "storage:write:shared"],
-  "hooks": ["after:modules", "after:userland", "error:modules"],
-  "layout": "self-decided",
-  "optional": false
-}
