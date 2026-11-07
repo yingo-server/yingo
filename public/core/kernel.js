@@ -122,14 +122,39 @@ function stageCore(options, rec) {
   const root = document.getElementById('yingo-root') || document.body;
   const overlay = makeOverlay();
   registerSlot('overlay', overlay);
-  for (const name of ['topbar', 'search', 'apps', 'music', 'sidebar']) {
+  // 主内容流
+  for (const name of ['topbar', 'search', 'apps', 'music', 'theme']) {
     const n = document.createElement('section');
     n.className = `yingo-slot yingo-slot--${name}`;
     n.dataset.slot = name;
     root.appendChild(n);
     registerSlot(name, n);
   }
-  rec.modules.push('bus', 'errors', 'slot:overlay', 'slot:topbar/search/apps/music/sidebar');
+  // 工具/管理抽屉：默认折叠，由布局模块或管理面板展开
+  const drawer = document.createElement('aside');
+  drawer.className = 'yingo-slot yingo-slot--drawer';
+  drawer.dataset.slot = 'drawer';
+  drawer.setAttribute('data-collapsed', 'true');
+  root.appendChild(drawer);
+  for (const name of ['admin', 'settings', 'panel', 'drawer', 'sidebar', 'main']) {
+    registerSlot(name, drawer);
+  }
+  // 抽屉开关：浮动按钮，纯框架级 UI（不属于任何模块）
+  const toggle = document.createElement('button');
+  toggle.id = 'yingo-drawer-toggle';
+  toggle.type = 'button';
+  toggle.className = 'yingo-drawer-toggle glass';
+  toggle.setAttribute('aria-label', '打开管理面板');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.textContent = '⚙';
+  toggle.addEventListener('click', () => {
+    const open = drawer.getAttribute('data-collapsed') === 'false';
+    drawer.setAttribute('data-collapsed', open ? 'true' : 'false');
+    toggle.setAttribute('aria-expanded', String(!open));
+    toggle.textContent = open ? '⚙' : '✕';
+  });
+  root.appendChild(toggle);
+  rec.modules.push('bus', 'errors', 'slot:overlay', 'slot:topbar/search/apps/music/theme', 'slot:drawer(admin/settings/panel/sidebar/main)');
 }
 
 function makeOverlay() {

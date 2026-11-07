@@ -27,7 +27,28 @@ body { font-family: var(--yingo-font); color: var(--yingo-on-surface); backgroun
 .yingo-slot--search { align-items: center; }
 .yingo-slot--apps { flex: 1; }
 .yingo-slot--music { margin-top: auto; }
-.yingo-slot--sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: 320px; z-index: var(--yingo-z-overlay); }
+.yingo-slot--theme { flex-direction: row; flex-wrap: wrap; align-items: center; }
+/* 工具/管理抽屉：可折叠侧挂面板，默认收起，不遮挡主内容 */
+.yingo-slot--drawer {
+  position: fixed; right: 0; top: 0; bottom: 0; width: min(360px, 92vw);
+  z-index: var(--yingo-z-overlay); overflow: auto; padding: var(--yingo-sp-4);
+  background: var(--yingo-surface);
+  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  border-left: 1px solid var(--yingo-outline-variant);
+  box-shadow: var(--yingo-shadow);
+  transform: translateX(100%); transition: transform var(--yingo-dur) var(--yingo-ease);
+}
+.yingo-slot--drawer[data-collapsed="false"] { transform: none; }
+.yingo-slot--drawer > details { margin-bottom: var(--yingo-sp-3); }
+@media (prefers-reduced-motion: reduce) { .yingo-slot--drawer { transition: none; } }
+.yingo-drawer-toggle {
+  position: fixed; right: 16px; bottom: 76px; z-index: calc(var(--yingo-z-overlay) + 1);
+  width: 32px; height: 32px; border-radius: var(--yingo-radius-sm);
+  display: grid; place-items: center; font-size: 14px;
+  background: transparent; color: var(--yingo-on-surface);
+  border: 0; box-shadow: none;
+}
 #yingo-overlay { position: fixed; inset: 0; pointer-events: none; z-index: var(--yingo-z-overlay); }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }

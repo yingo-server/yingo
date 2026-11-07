@@ -1,16 +1,14 @@
-/* 新拟物：同底色双阴影、低对比、大圆角、柔和凹凸 */
+/* 新拟物：同底色双阴影、低对比、柔和凹凸。仅 token + 卡片质感。 */
 :root[data-yingo-theme="neumorphism"] {
   --yingo-bg: #e0e5ec; --yingo-surface: #e0e5ec;
   --yingo-on-surface: #4a5568; --yingo-on-surface-variant: #718096;
-  --yingo-primary: #6b7a99; --yingo-on-primary: #f7fafc;
-  --yingo-outline: rgba(163,177,198,.4); --yingo-outline-variant: rgba(255,255,255,.6);
-  --yingo-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
-  --yingo-shadow-inset: inset 6px 6px 10px #a3b1c6, inset -6px -6px 10px #ffffff;
+  --yingo-primary: #5b6b8c; --yingo-on-primary: #f7fafc;
+  --yingo-outline: rgba(163,177,198,.55); --yingo-outline-variant: rgba(255,255,255,.7);
+  --yingo-shadow: 9px 9px 18px #a3b1c6, -9px -9px 18px #fff;
   --yingo-radius-sm: 12px; --yingo-radius-md: 18px; --yingo-radius-lg: 28px; --yingo-radius-xl: 40px;
   --yingo-blur: 0px;
+  --yingo-card-bg: #e0e5ec;
+  --yingo-card-border: 1px solid rgba(255,255,255,.55);
+  --yingo-card-shadow: var(--yingo-shadow);
+  --yingo-accent-soft: rgba(91,107,140,.10);
 }
-:root[data-yingo-theme="neumorphism"] .glass,
-:root[data-yingo-theme="neumorphism"] .yingo-glass { background: var(--yingo-bg); border: 1px solid rgba(255,255,255,.5); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: var(--yingo-shadow); }
-:root[data-yingo-theme="neumorphism"] .y-module button { border: 0; border-radius: var(--yingo-radius-md); padding: 12px 20px; color: var(--yingo-on-surface); background: var(--yingo-bg); box-shadow: var(--yingo-shadow); }
-:root[data-yingo-theme="neumorphism"] .y-module button:active { box-shadow: var(--yingo-shadow-inset); }
-:root[data-yingo-theme="neumorphism"] input { box-shadow: var(--yingo-shadow-inset); border: 0; border-radius: var(--yingo-radius-md); background: var(--yingo-bg); }

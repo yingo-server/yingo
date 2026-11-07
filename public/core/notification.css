@@ -46,17 +46,18 @@
   left: 16px;
   bottom: 16px;
   z-index: var(--yingo-notify-z);
-  font: 12px/1.2 var(--yingo-font-mono, ui-monospace, monospace);
-  padding: 7px 11px;
-  border-radius: 999px;
-  border: 1px solid var(--yingo-outline-variant, rgba(0, 0, 0, .12));
+  font: 11px/1.2 var(--yingo-font-mono, ui-monospace, monospace);
+  padding: 6px 10px;
+  border-radius: var(--yingo-radius-pill, 999px);
+  border: 0;
   color: var(--yingo-on-surface, #1b1b1f);
-  background: var(--yingo-surface, rgba(255, 255, 255, .8));
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: transparent;
+  opacity: .32;                 /* 默认极低调，hover 才显现 */
   cursor: pointer;
+  transition: opacity var(--yingo-dur-fast, .16s);
 }
-.yingo-diag-toggle[data-has-error="1"] { color: #b3261e; border-color: #b3261e; }
+.yingo-diag-toggle:hover, .yingo-diag-toggle:focus-visible { opacity: .9; }
+.yingo-diag-toggle[data-has-error="1"] { color: #b3261e; opacity: .85; }
 
 .yingo-diagnostics {
   position: fixed;

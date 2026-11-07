@@ -111,19 +111,13 @@ function el(tag, cls) {
   return n;
 }
 
-/** 样式由本模块自行注入，不依赖外部 index.html 是否 link 了 notification.css */
+/** 样式由 index.html 直接 link；此处仅保证降级场景（模块单独被引用）不裸奔 */
 function ensureStyles() {
-  if (document.getElementById('yingo-notification-styles')) return;
-  // 浏览器环境：用 link 引入同目录样式；Node 自测桩里 createElement 无 href 检查，安全跳过
+  if (document.querySelector('link[href*="notification.css"]')) return;
   const link = document.createElement('link');
-  link.id = 'yingo-notification-styles';
   link.rel = 'stylesheet';
   link.href = new URL('./notification.css', import.meta.url).href;
-  if (typeof link.setAttribute === 'function' && typeof document.head?.appendChild === 'function') {
-    document.head.appendChild(link);
-  } else {
-    (document.getElementById('yingo-root') || document.body)?.appendChild?.(link);
-  }
+  (document.head || document.body).appendChild(link);
 }
 
 function onPanelClick(ev) {

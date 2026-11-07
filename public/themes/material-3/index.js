@@ -9,9 +9,12 @@ export default {
   id: ID,
   async init(ctx) {
     ctx.bus.on('theme:apply', ({ id }) => {
-      if (id !== ID) return;
       document.documentElement.setAttribute('data-yingo-theme', ID);
-      ensureThemeCss();
+      // 切换时移除其它主题的 link，始终只保留一份
+      for (const other of ['material-3', 'neumorphism', 'lime-tabs']) {
+        if (other !== ID) document.getElementById('theme-css-' + other)?.remove();
+      }
+      if (id === ID) ensureThemeCss(); else removeThemeCss();
     });
     if (ID === 'lime-tabs') {
       try {
@@ -19,11 +22,14 @@ export default {
         if (bg && bg.url) await ctx.bus.emit('theme:bg-set', bg);
       } catch (e) { ctx.notify('warn', '背景参数恢复失败', { code: 'E_THEME_BG', module: ID }); }
     }
-    ensureThemeCss();
+    // 只在自己是当前主题时挂 CSS，避免三套 tokens 同时生效、互相覆盖
+    if (document.documentElement.getAttribute('data-yingo-theme') === ID) ensureThemeCss();
+    else removeThemeCss();
   },
-  destroy() { document.getElementById('theme-css-' + ID)?.remove(); },
+  destroy() { removeThemeCss(); },
 };
 
+function removeThemeCss() { document.getElementById('theme-css-' + ID)?.remove(); }
 function ensureThemeCss() {
   if (document.getElementById('theme-css-' + ID)) return;
   const link = document.createElement('link');

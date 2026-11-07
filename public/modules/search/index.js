@@ -105,13 +105,14 @@ function buildUi(ctx) {
   });
   inputNode = makeEl('input', 'y-module-search-input');
   inputNode.type = 'search';
-  inputNode.placeholder = '搜索 / 输入 ! 指令';
+  inputNode.placeholder = '搜索';
   inputNode.setAttribute('aria-label', '搜索关键词');
   inputNode.addEventListener('input', () => {
     try {
       // 输入即发失效/过滤事件；不缓存任何结果。
       void emit(ctx, 'search:filter', { query: inputNode.value });
       renderLocalResults(inputNode.value, 'all');
+      rootNode?.classList.toggle('has-query', inputNode.value.trim().length > 0);
     } catch (err) {
       report(ctx, 'E_SCHEMA', '搜索过滤事件发射失败', err);
     }

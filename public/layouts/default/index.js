@@ -5,7 +5,7 @@
 export default {
   id: 'default',
   async init(ctx) {
-    const names = ['topbar', 'search', 'apps', 'music', 'sidebar'];
+    const names = ['topbar', 'search', 'apps', 'music', 'theme'];
     for (const name of names) {
       const node = ctx.slot(name);
       if (!node) continue;

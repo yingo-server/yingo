@@ -21,23 +21,23 @@ import { createProgress, readCache, writeCache, preload, whenIdle, inBatches } f
 
 /* ---- 关键路径：只这几个先加载 ---- */
 const CRITICAL = [
-  ['clock', '../modules/clock/index.js'],
-  ['search', '../modules/search/index.js'],
-  ['apps-grid', '../modules/apps-grid/index.js'],
+  ['clock', '../modules/clock/index.js?v=2'],
+  ['search', '../modules/search/index.js?v=2'],
+  ['apps-grid', '../modules/apps-grid/index.js?v=2'],
 ];
 
 /* ---- 后台懒加载 ---- */
 const DEFERRED_MODULES = [
-  ['music-player', '../modules/music-player/index.js'],
-  ['theme-manager', '../modules/theme-manager/index.js'],
-  ['admin', '../modules/admin/index.js'],
+  ['music-player', '../modules/music-player/index.js?v=2'],
+  ['theme-manager', '../modules/theme-manager/index.js?v=2'],
+  ['admin', '../modules/admin/index.js?v=2'],
 ];
 const THEME_ENTRIES = [
-  ['material-3', '../themes/material-3/index.js'],
-  ['neumorphism', '../themes/neumorphism/index.js'],
-  ['lime-tabs', '../themes/lime-tabs/index.js'],
+  ['material-3', '../themes/material-3/index.js?v=2'],
+  ['neumorphism', '../themes/neumorphism/index.js?v=2'],
+  ['lime-tabs', '../themes/lime-tabs/index.js?v=2'],
 ];
-const LAYOUT_ENTRIES = [['default', '../layouts/default/index.js']];
+const LAYOUT_ENTRIES = [['default', '../layouts/default/index.js?v=2']];
 
 const MODULE_DEFAULTS = {
   level: 6, permissions: ['storage:read:shared', 'storage:write:shared', 'config:read', 'apps:read', 'music:read'],
@@ -67,14 +67,13 @@ const FALLBACK_CONFIG = {
 (function ensureStyles() {
   const list = [
     ['yingo-module-styles', '../styles/modules.css'],
-    ['yingo-notification-styles', './notification.css'],
     ['yingo-progress-styles', './progressive-loader.css'],
   ];
   for (const [id, rel] of list) {
     if (document.getElementById(id)) continue;
     const l = document.createElement('link');
     l.id = id; l.rel = 'stylesheet';
-    l.href = new URL(rel, import.meta.url).href;
+    l.href = new URL(rel, import.meta.url).href + '?v=2';
     (document.head || document.body).appendChild(l);
   }
 })();
@@ -108,7 +107,8 @@ async function loadEntry(id, path, defaults, progress, useCache = true) {
     }
     if (!Object.keys(fileManifest).length) {
       try {
-        const metaUrl = new URL(path.replace(/index\.js$/, '') + manifestName(path), import.meta.url);
+        const cleanPath = path.split('?')[0];
+      const metaUrl = new URL(cleanPath.replace(/index\.js$/, '') + manifestName(cleanPath), import.meta.url);
         const res = await fetch(metaUrl, { cache: 'default' });
         if (res.ok) fileManifest = await res.json();
       } catch { /* 无元数据合法 */ }
@@ -233,7 +233,8 @@ const progress = createProgress();
         const manifests = {};
         for (const [id, p] of [...CRITICAL, ...DEFERRED_MODULES, ...THEME_ENTRIES, ...LAYOUT_ENTRIES]) {
           try {
-            const r = await fetch(new URL(p.replace(/index\.js$/, '') + manifestName(p), import.meta.url), { cache: 'default' });
+            const cp = p.split('?')[0];
+            const r = await fetch(new URL(cp.replace(/index\.js$/, '') + manifestName(cp), import.meta.url), { cache: 'default' });
             if (r.ok) manifests[id] = await r.json();
           } catch { /* noop */ }
         }
