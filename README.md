@@ -27,6 +27,20 @@ python3 scripts/serve.py 8899
 - **内置模块**（框架自身功能，与 `/apps/` 应用无关）：clock（右上角时间）、search（多引擎 + 本地应用/音乐聚合 + `!` 指令）、apps-grid（应用网格 + 拖拽排序）、music-player（真实播放/进度/音量/循环/随机/列表，状态持久化）、theme-manager、admin（四分区 + VFS 文件浏览器）。
 - 详细接口见 `docs/core-api.md`，完整规范与决策见 `SPEC.md`。
 
+### 渐进加载与缓存
+
+首屏只加载 3 个关键模块（clock / search / apps-grid），**约 0.7 秒内即出现可用界面**；
+其余模块、三套主题、布局、插件在 `requestIdleCallback` 中分批懒加载并热注册到已运行的内核，
+全程有分阶段进度条（含逐项明细），完成后自动淡出。
+
+缓存分三层：
+1. `_headers` —— `/core /modules /themes /layouts /styles` 一年 immutable；清单 5 分钟 + stale-while-revalidate。
+2. `yingo:preboot:v1` —— 配置、清单、模块元数据写入 localStorage（6h TTL），二次访问零网络读取。
+3. `modulepreload` —— 对后续模块发预热链接，消除 ESM 依赖瀑布的串行等待。
+
+失败回退：网络 → 缓存 → 内嵌默认值；单个模块加载失败 → 可见的「点击重试」占位模块 + 诊断通知，不缺 UI 块。
+启动致命失败时显示降级页并提供「清缓存并重试」按钮。
+
 ### 音乐
 
 曲目放 `public/assets/audio/`，中文标题与作者可写在 `public/assets/audio/audio.json`，然后运行

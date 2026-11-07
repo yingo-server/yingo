@@ -1,23 +1,13 @@
 /**
- * config.mjs — 读取函数侧 config.json（非敏感），过滤掉任何疑似凭据字段。
- * 绝不读取 process.env 里的 token 返回给前端；环境变量仅供未来只读访问私有仓库用。
+ * config.mjs — 公开配置（非敏感），过滤掉任何疑似凭据字段。
+ * 绝不把 process.env 里的 token 返回给前端。
  */
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { E, errorBody } from './errors.mjs';
+import { readAsset } from './assets.mjs';
 
-const DIR = dirname(fileURLToPath(import.meta.url));
 const FORBIDDEN = /^(token|secret|password|apikey|api_key|authorization|access_token|private_key)$/i;
 
 export async function loadPublicConfig() {
-  let cfg;
-  try {
-    cfg = JSON.parse(await readFile(join(DIR, '..', 'config.json'), 'utf8'));
-  } catch (e) {
-    throw Object.assign(new Error('函数侧 config.json 不可读'), { code: E.E_INTERNAL });
-  }
-  return strip(cfg);
+  return strip(await readAsset('config.json'));
 }
 
 function strip(v, depth = 0) {

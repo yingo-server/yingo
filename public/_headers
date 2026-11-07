@@ -11,7 +11,37 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Access-Control-Allow-Origin: *
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; worker-src 'none'; manifest-src 'self'; form-action 'self' https:;
-  Cache-Control: public, max-age=0, must-revalidate
+  # 默认：短缓存（用于 HTML 等可能变化的入口）
+  Cache-Control: public, max-age=60, stale-while-revalidate=300
+
+# 框架源码：内容稳定，长缓存 + 后台校验，二次访问几乎零请求
+/core/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
+  X-Content-Type-Options: nosniff
+/modules/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
+  X-Content-Type-Options: nosniff
+/themes/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
+  X-Content-Type-Options: nosniff
+/layouts/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
+  X-Content-Type-Options: nosniff
+/styles/*
+  Cache-Control: public, max-age=31536000, stale-while-revalidate=86400, immutable
+  X-Content-Type-Options: nosniff
+
+# 构建产物清单：允许短缓存 + 后台更新（前端另有 6h localStorage 预引导缓存）
+/registry.json
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  X-Content-Type-Options: nosniff
+/music.json
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400
+  X-Content-Type-Options: nosniff
+
+# 首页：短缓存即可（体积小）
+/index.html
+  Cache-Control: public, max-age=60, stale-while-revalidate=300
 
 /api/*
   Access-Control-Allow-Origin: *

@@ -13,6 +13,12 @@ const problems = [];
 const NAME_OK = /^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+)*$/;
 const SPECIAL = new Set(['.gitignore', '_headers', '_redirects', 'SPEC.md', 'README.md', 'LICENSE']);
 const STORAGE_API = /\b(localStorage|sessionStorage|indexedDB|caches)\s*\./;
+// Kernel 启动之前必须能用缓存（否则首屏前无法快速恢复），仅这两个文件是受控例外。
+// 其余任何模块/主题/插件直接碰原生存储一律视为违规。
+const PREBOOT_WHITELIST = new Set([
+  'public/core/progressive-loader.js',
+  'public/core/boot.js',
+]);
 const SECRET_FIELD = /"(token|secret|password|apikey|api_key|authorization|access_token|private_key)"\s*:/i;
 const CREDENTIAL = /ghp_[A-Za-z0-9]{10,}|sk-[A-Za-z0-9]{16,}/;
 
@@ -39,9 +45,9 @@ for (const p of files) {
   if (/\.(bak|tmp|swp)$/i.test(base)) problems.push(`[临时/备份文件] ${rel}`);
   let text = '';
   try { text = await readFile(p, 'utf8'); } catch { continue; }
-  // 2) 原生存储 API：仅 adapters/ 白名单
+  // 2) 原生存储 API：仅 adapters/ 与「预引导缓存」白名单
   if (rel.endsWith('.js') || rel.endsWith('.mjs')) {
-    if (STORAGE_API.test(text) && !rel.includes('/storage/adapters/')) {
+    if (STORAGE_API.test(text) && !rel.includes('/storage/adapters/') && !PREBOOT_WHITELIST.has(rel)) {
       problems.push(`[原生存储直调] ${rel}`);
     }
   }

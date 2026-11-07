@@ -10,7 +10,7 @@
 import { STAGES, runHooks, listHooks } from './stages.js';
 import { emit, emitSync, initBus, on, reportError, getEventLog } from './bus.js';
 import { registerService, getService, listServices } from './service-registry.js';
-import { registerSlot, defineModule, definePlugin, listModules, createModuleContext, setModuleState } from './module-api.js';
+import { registerSlot, defineModule, definePlugin, listModules, createModuleContext, setModuleState, getModule as getModuleSafe } from './module-api.js';
 import { initNotification, push as notifyPush, setStorageMetrics } from './notification.js';
 import { initStorage, getStorageMetrics, getVfs as getVfsInstance, shutdownStorage } from './storage/storage-service.js';
 import { initConfigService } from './config-service.js';
@@ -195,16 +195,26 @@ async function stageServices(options, rec) {
     apply: (id) => emit('theme:apply', { id }),
     setBackground: (p) => emit('theme:bg-set', p),
   }, 'kernel');
-  // 清单镜像写入 /system/*（函数只读，前端缓存由 VFS 承担）
-  for (const [name, path] of [['registry', '/system/registry.json'], ['music', '/system/music.json']]) {
-    try {
-      const res = await fetch(`/${name}.json`, { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
+  // 清单镜像写入 /system/*（来自预引导缓存/网络，代码侧零额外请求）
+  for (const [name, data, path] of [
+    ['registry', options.registry, '/system/registry.json'],
+    ['music', options.music, '/system/music.json'],
+  ]) {
+    if (data && typeof data === 'object') {
+      try {
         await emit('storage:set', { path, value: data, schema: 'manifest-mirror@1' });
         rec.modules.push(`mirror:${name}`);
-      }
-    } catch { /* 清单缺失不阻断，函数侧会兜底 */ }
+      } catch { /* 镜像失败不阻断 */ }
+    } else {
+      // 回退：尝试从静态路径读取（Netlify 无函数时的兼容路径）
+      try {
+        const res = await fetch(`/${name}.json`, { cache: 'default' });
+        if (res.ok) {
+          await emit('storage:set', { path, value: await res.json(), schema: 'manifest-mirror@1' });
+          rec.modules.push(`mirror:${name}`);
+        }
+      } catch { /* 清单缺失不阻断，函数侧会兜底 */ }
+    }
   }
   rec.modules.push('config-service', 'apps-service', 'music-service', 'theme-service', 'module-service');
 }
@@ -255,8 +265,10 @@ async function stageUserland(options, rec) {
       rec.modules.push(`layout:${l.manifest.id}`);
     } catch (err) { await isolate(l.manifest?.id || 'layout', 'layout', err); }
   }
-  // 清理 /tmp/*
-  await emit('storage:clear', { prefix: '/tmp/', scope: 'session' }).catch(() => {});
+  // 渐进模式下 /tmp/* 由后台加载阶段结束后再清，此处跳过
+  if (!options.progressive) {
+    await emit('storage:clear', { prefix: '/tmp/', scope: 'session' }).catch(() => {});
+  }
 }
 
 async function isolate(id, kind, err) {
@@ -268,6 +280,39 @@ async function isolate(id, kind, err) {
   }, e);
 }
 
+/**
+ * mountDeferred — 渐进加载阶段 B 的热注册入口
+ * 内核已经 boot() 完成后再加载的模块，走同一套 defineModule/createModuleContext/init，
+ * 并追加到 boot timeline 的 userland 记录里，诊断面板可见。
+ */
+export async function mountDeferred(entry, kind = 'module') {
+  if (!entry || !entry.manifest?.id) return false;
+  const id = entry.manifest.id;
+  try {
+    const manifest = { ...entry.manifest, layout: 'self-decided', kind: kind === 'plugin' ? 'plugin' : 'module' };
+    // 占位模块重试时可能已注册，先允许幂等
+    if (!getModuleSafe(id)) {
+      if (kind === 'plugin') definePlugin(manifest);
+      else defineModule(manifest);
+    }
+    const ctx = createModuleContext(manifest);
+    await entry.factory?.init?.(ctx);
+    setModuleState(id, 'ready', { deferred: true });
+    const rec = timeline.find((s) => s.stage === 'userland');
+    if (rec) rec.modules.push(`${kind}:${id}`);
+    bootReport.modules.push({ id, state: 'ready', deferred: true });
+    await publishSnapshot();   // 刷新 __YINGO_BOOT__
+    return true;
+  } catch (err) {
+    const e = normalizeError(err, E.E_MODULE_INIT);
+    setModuleState(id, 'failed', { error: serializeError(e) });
+    await reportError(e.code, `延迟加载 ${id} 失败: ${e.message}`, {
+      stage: 'userland', module: id, detail: serializeError(e),
+    }, e);
+    return false;
+  }
+}
+
 /** 只读快照，供 devtools 与诊断 */
 async function publishSnapshot() {
   const snapshot = Object.freeze({
@@ -275,7 +320,7 @@ async function publishSnapshot() {
     startedAt: bootReport.startedAt,
     finishedAt: bootReport.finishedAt,
     timeline: timeline.map((x) => ({ ...x })),
-    modules: listModules().map((m) => ({ id: m.id, kind: m.kind, level: m.level, state: m.state })),
+    modules: listModules().map((m) => ({ id: m.id, kind: m.kind, level: m.level, state: m.state, deferred: !!m.deferred })),
     services: listServices(),
     hooks: listHooks(),
     events: getEventLog().slice(-100),
