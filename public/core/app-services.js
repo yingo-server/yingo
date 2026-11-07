@@ -43,12 +43,11 @@ export function initAppServices(options = {}) {
     return { version: m.version || 1, tracks: Array.isArray(m.tracks) ? m.tracks : [] };
   });
 
-  on('music:play', async ({ id } = {}) => {
-    if (!id) throw makeError(E.E_NOT_FOUND, 'music:play 需要 id');
+  on('music:play', async ({ id, index } = {}) => {
+    if (!id && typeof index !== 'number') throw makeError(E.E_NOT_FOUND, 'music:play 需要 id 或 index');
     const { tracks } = await emit('music:list', {});
-    const track = tracks.find((t) => t.id === id);
-    if (!track) throw makeError(E.E_NOT_FOUND, `音乐不存在: ${id}`, { id });
-    await emit('music:state', { state: { id, playing: true } });
+    const track = typeof index === 'number' ? tracks[index] : tracks.find((t) => t.id === id);
+    if (!track) throw makeError(E.E_NOT_FOUND, `音乐不存在: ${id ?? index}`, { id, index });
     return track;
   });
 

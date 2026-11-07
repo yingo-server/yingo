@@ -1,0 +1,84 @@
+/* Yingo 内置模块样式（框架级，模块自决挂载位置） */
+.y-module { padding: var(--yingo-sp-4); border-radius: var(--yingo-radius-lg); }
+.y-module h2, .y-module h3 { margin: 0 0 var(--yingo-sp-2); font-size: 15px; font-weight: 600; }
+.y-module h4, .y-module h5 { margin: var(--yingo-sp-3) 0 var(--yingo-sp-1); font-size: 12px; opacity: .8; }
+.y-module p { margin: 0; font-size: 12px; line-height: 1.6; }
+.y-module input, .y-module select {
+  border: 1px solid var(--yingo-outline-variant); border-radius: var(--yingo-radius-sm);
+  background: transparent; color: inherit; padding: 7px 10px; font-size: 13px; min-width: 0;
+}
+.y-module input::placeholder { opacity: .55; }
+.y-module button {
+  border: 1px solid var(--yingo-outline-variant); border-radius: var(--yingo-radius-sm);
+  background: transparent; color: inherit; padding: 7px 12px; font-size: 12px;
+}
+.y-module button:hover:not(:disabled) { background: var(--yingo-outline-variant); }
+.y-module button:disabled { opacity: .45; cursor: not-allowed; }
+.y-module a { color: var(--yingo-primary); }
+
+/* search */
+.y-module-search { display: flex; flex-direction: column; gap: var(--yingo-sp-2); }
+.y-module-search-row { display: flex; gap: var(--yingo-sp-2); }
+.y-module-search-input { flex: 1; font-size: 15px !important; padding: 11px 14px !important; }
+.y-module-search-engine { max-width: 130px; }
+.y-module-search-submit { white-space: nowrap; }
+.y-module-search-hint { font-size: 11px; opacity: .65; }
+.y-module-search-aggregate { display: grid; grid-template-columns: 1fr 1fr; gap: var(--yingo-sp-3); }
+.y-module-search-aggregate-title { grid-column: 1 / -1; margin: 0; }
+.y-module-search-aggregate ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.y-module-search-result-btn { width: 100%; text-align: left; border: 0; background: transparent; padding: 4px 6px; overflow: hidden; text-overflow: ellipsis; }
+.y-module-search-result-btn:hover { background: var(--yingo-outline-variant); }
+.y-module-search-empty { opacity: .6; }
+.y-module-search-custom { font-size: 12px; }
+.y-module-search-custom-row { display: flex; gap: var(--yingo-sp-2); margin-top: var(--yingo-sp-2); flex-wrap: wrap; }
+.y-module-search-custom-row input { flex: 1; min-width: 130px; }
+
+/* apps-grid */
+.y-module-apps-grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--yingo-sp-3); margin-top: var(--yingo-sp-3); }
+.y-module-apps-grid-card {
+  display: flex; flex-direction: column; gap: 6px; padding: var(--yingo-sp-3);
+  border: 1px solid var(--yingo-outline-variant); border-radius: var(--yingo-radius-md);
+  background: var(--yingo-surface); transition: transform var(--yingo-dur-fast), box-shadow var(--yingo-dur-fast);
+}
+.y-module-apps-grid-card:hover { transform: translateY(-2px); box-shadow: var(--yingo-shadow); }
+.y-module-apps-grid-card.is-dragging { opacity: .4; }
+.y-module-apps-grid-card.is-drop-target { border-color: var(--yingo-primary); }
+.y-module-apps-grid-card-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.y-module-apps-grid-icon { font-size: 18px; }
+.y-module-apps-grid-card-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.y-module-apps-grid-group, .y-module-apps-grid-tag { font-size: 10px; opacity: .6; border: 1px solid var(--yingo-outline-variant); border-radius: 99px; padding: 1px 7px; }
+.y-module-apps-grid-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.y-module-apps-grid-card-desc { flex: 1; font-size: 11px; opacity: .75; }
+.y-module-apps-grid-card-link { font-size: 12px; text-decoration: none; }
+.y-module-apps-grid-empty { grid-column: 1 / -1; text-align: center; padding: var(--yingo-sp-6); opacity: .7; }
+.y-module-apps-grid-status { opacity: .7; }
+
+/* clock */
+.y-module-clock { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; }
+.y-module-clock-date { font-size: 11px; opacity: .7; }
+.y-module-clock-time { font: 600 20px/1.2 var(--yingo-font-mono); }
+
+/* admin */
+.y-module-admin { max-width: 100%; }
+.y-module-admin summary { cursor: pointer; font-weight: 600; }
+.y-admin-section { margin-top: var(--yingo-sp-4); padding-top: var(--yingo-sp-3); border-top: 1px solid var(--yingo-outline-variant); display: flex; flex-direction: column; gap: var(--yingo-sp-2); }
+.y-admin-hint { opacity: .7; }
+.y-admin-apps-list, .y-admin-module-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.y-admin-app-row, .y-admin-module-list li { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.y-admin-app-label { flex: 1; }
+.y-admin-theme-list, .y-admin-data-actions, .y-admin-storage-browser-actions, .y-admin-storage-browser-detail-actions { display: flex; flex-wrap: wrap; gap: var(--yingo-sp-2); }
+.y-admin-theme-bg-form { display: flex; flex-wrap: wrap; gap: var(--yingo-sp-2); align-items: center; }
+.y-admin-theme-bg-form label { font-size: 11px; opacity: .7; }
+
+/* storage browser */
+.y-admin-storage-browser { display: flex; flex-direction: column; gap: var(--yingo-sp-2); font-size: 12px; }
+.y-admin-storage-browser-body { display: grid; grid-template-columns: minmax(160px, 1fr) 2fr; gap: var(--yingo-sp-3); min-height: 240px; }
+@media (max-width: 640px) { .y-admin-storage-browser-body { grid-template-columns: 1fr; } }
+.y-admin-storage-browser-tree, .y-admin-storage-browser-detail { overflow: auto; max-height: 340px; }
+.y-admin-storage-browser-tree button { width: 100%; text-align: left; border: 0; background: transparent; padding: 4px 6px; }
+.y-admin-storage-browser-tree button.is-selected { background: var(--yingo-primary); color: var(--yingo-on-primary); }
+.y-admin-storage-browser-meta-table { border-collapse: collapse; width: 100%; font-size: 11px; }
+.y-admin-storage-browser-meta-table td { border-bottom: 1px solid var(--yingo-outline-variant); padding: 3px 6px; word-break: break-all; }
+.y-admin-storage-browser-value { white-space: pre-wrap; word-break: break-all; background: var(--yingo-outline-variant); padding: 8px; border-radius: var(--yingo-radius-sm); max-height: 160px; overflow: auto; font: 11px var(--yingo-font-mono); }
+.y-admin-storage-browser-filters, .y-admin-storage-browser-import, .y-admin-storage-browser-export { display: flex; flex-wrap: wrap; gap: var(--yingo-sp-2); }
+.y-admin-storage-browser textarea { width: 100%; min-height: 70px; font: 11px var(--yingo-font-mono); border: 1px solid var(--yingo-outline-variant); border-radius: var(--yingo-radius-sm); background: transparent; color: inherit; padding: 6px; }

@@ -102,7 +102,10 @@ const SCHEMAS = {
   'search:filter': { payload: { query: 'string' }, description: '本地应用/音乐过滤' },
 
   'music:list': { payload: {}, description: '音乐清单' },
-  'music:play': { payload: { id: 'string?' }, description: '播放' },
+  'music:play': { payload: { id: 'string?', index: 'number?' }, description: '播放指定曲目' },
+  'music:next': { payload: {}, description: '下一首' },
+  'music:prev': { payload: {}, description: '上一首' },
+  'music:toggle': { payload: {}, description: '播放/暂停' },
   'music:state': { payload: { state: 'object' }, description: '播放状态' },
 
   'module:list': { payload: {}, description: '模块清单' },

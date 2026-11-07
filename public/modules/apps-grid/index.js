@@ -1,5 +1,5 @@
-// 应用网格空壳：通过总线取清单、渲染卡片占位，并订阅排序文件的失效广播。
-// 不做应用 CRUD、不做持久化业务逻辑；排序只做最简占位应用，后续阶段替换。
+// 应用网格：取清单、渲染卡片、分组与过滤、拖拽排序持久化（/shared/apps/order.json）。
+// 应用 CRUD 属于管理面板职责，本模块只负责展示与用户级排序。
 // 布局自决（ADR-005）：模块内部选择挂载插槽，不依赖任何 DOM id。
 
 const MODULE_ID = 'apps-grid';
@@ -78,7 +78,7 @@ function makeEl(tag, className, text) {
 function buildUi() {
   rootNode = makeEl('section', 'y-module y-module-apps-grid');
   rootNode.dataset.moduleId = MODULE_ID;
-  statusNode = makeEl('p', 'y-module-apps-grid-status', '应用清单加载中（占位）');
+  statusNode = makeEl('p', 'y-module-apps-grid-status', '正在加载应用清单…');
   gridNode = makeEl('div', 'y-module-apps-grid-cards');
   rootNode.append(makeEl('h2', 'y-module-apps-grid-title', '应用'), statusNode, gridNode);
 }
@@ -97,7 +97,7 @@ function normalizeOrder(value) {
   return [];
 }
 
-// 占位排序：优先使用 /shared/apps/order.json 中的 id 顺序，其余按 app.order。
+// 排序：优先使用 /shared/apps/order.json 中的 id 顺序，其余按 app.order。
 function applyOrder(list, order) {
   const rank = new Map(order.map((id, index) => [id, index]));
   return list.slice().sort((a, b) => {
@@ -114,24 +114,68 @@ function render() {
   const q = filterQuery.trim().toLowerCase();
   let visible = apps.filter((app) => !app.hidden);
   if (q) {
-    // UI 级占位过滤，与「search:filter」事件配套，不是业务搜索算法。
-    visible = visible.filter((app) => ['name', 'id', 'description', 'group'].some((key) => String(app[key] == null ? '' : app[key]).toLowerCase().includes(q)));
+    visible = visible.filter((app) => ['name', 'id', 'description', 'group'].some((key) =>
+      String(app[key] == null ? '' : app[key]).toLowerCase().includes(q)));
+  }
+  if (!visible.length) {
+    const empty = makeEl('div', 'y-module-apps-grid-empty');
+    empty.append(makeEl('p', '', apps.length ? '没有匹配的应用' : '暂无应用'));
+    empty.append(makeEl('p', '', apps.length ? '试试其它关键词' : '应用放入 public/apps/<slug>/app.json 后重跑 gen-manifest.mjs'));
+    gridNode.append(empty);
   }
   for (const app of visible) {
     const card = makeEl('article', 'y-module-apps-grid-card');
     card.dataset.appId = String(app.id || '');
-    card.append(makeEl('span', 'y-module-apps-grid-icon', String(app.icon || '·')));
-    card.append(makeEl('h3', 'y-module-apps-grid-card-title', String(app.name || app.id || '未命名应用')));
-    card.append(makeEl('p', 'y-module-apps-grid-card-desc', String(app.description || app.group || '占位描述')));
-    const link = app.entry || app.path;
+    const link = app.entry || app.path || app.url;
     if (link) {
-      const anchor = makeEl('a', 'y-module-apps-grid-card-link', '打开（占位）');
+      card.draggable = true;
+      card.addEventListener('dragstart', (e) => {
+        e.dataTransfer?.setData('text/plain', String(app.id));
+        card.classList.add('is-dragging');
+      });
+      card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
+      card.addEventListener('dragover', (e) => { e.preventDefault(); card.classList.add('is-drop-target'); });
+      card.addEventListener('dragleave', () => card.classList.remove('is-drop-target'));
+      card.addEventListener('drop', async (e) => {
+        e.preventDefault(); card.classList.remove('is-drop-target');
+        const fromId = e.dataTransfer?.getData('text/plain');
+        if (fromId && fromId !== app.id) await persistDrag(ctxRef, fromId, String(app.id), visible);
+      });
+    }
+    const head = makeEl('div', 'y-module-apps-grid-card-head');
+    head.append(makeEl('span', 'y-module-apps-grid-icon', String(app.icon || '·')));
+    if (app.group) head.append(makeEl('span', 'y-module-apps-grid-group', String(app.group)));
+    head.append(makeEl('h3', 'y-module-apps-grid-card-title', String(app.name || app.id || '未命名应用')));
+    card.append(head);
+    card.append(makeEl('p', 'y-module-apps-grid-card-desc', String(app.description || '')));
+    if (Array.isArray(app.tags) && app.tags.length) {
+      const tags = makeEl('div', 'y-module-apps-grid-tags');
+      for (const t of app.tags.slice(0, 4)) tags.append(makeEl('span', 'y-module-apps-grid-tag', String(t)));
+      card.append(tags);
+    }
+    if (link) {
+      const anchor = makeEl('a', 'y-module-apps-grid-card-link', app.external ? '↗ 打开' : '打开');
       anchor.href = String(link);
+      if (app.external || /^https?:\/\//i.test(String(link))) {
+        anchor.target = '_blank'; anchor.rel = 'noopener noreferrer';
+      }
       card.append(anchor);
     }
     gridNode.append(card);
   }
-  statusNode.textContent = `共 ${apps.length} 项，显示 ${visible.length} 项（占位渲染）`;
+  statusNode.textContent = `共 ${apps.length} 项，显示 ${visible.length} 项${q ? ' · 已过滤' : ''}`;
+}
+
+/** 拖拽排序：把新的 id 顺序写回 /shared/apps/order.json（用户级，不改仓库 app.json） */
+async function persistDrag(ctx, fromId, toId, visible) {
+  if (!ctx) return;
+  try {
+    const ids = visible.map((a) => String(a.id));
+    const from = ids.indexOf(fromId), to = ids.indexOf(toId);
+    if (from < 0 || to < 0) return;
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    await emit(ctx, 'storage:set', { path: ORDER_PATH, value: ids, schema: 'apps-order@1' });
+  } catch (err) { report(ctx, 'E_VFS_BACKEND', '保存应用排序失败', err); }
 }
 
 async function refresh(ctx) {

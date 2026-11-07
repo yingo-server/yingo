@@ -1,5 +1,5 @@
 // Storage VFS 文件浏览器壳（§6.11 / D29）：管理面板「数据与清理」分区的独立组件。
-// 六区树形浏览 / 条目 value 预览 + 完整 meta 展示 / 删除 / JSON 导入导出占位。
+// 六区树形浏览 / 条目 value 预览 + 完整 meta 展示 / 删除 / JSON 导入导出。
 // 全部读写只走 ctx.bus.emit('storage:*') 或受限 ctx.vfs 句柄，绝不接触原生存储 API。
 // 本文件只提供组件工厂，不实现 VFS 本身、不实现真实导入导出算法（由 StorageService 承担）。
 
@@ -20,6 +20,7 @@ export function createStorageBrowser(ctx) {
   let valueNode = null;
   let selectedNode = null;
   let deleteBtn = null;
+  let renameBtn = null;
   let prefixInput = null;
   let originInput = null;
   let usageNode = null;
@@ -198,7 +199,7 @@ export function createStorageBrowser(ctx) {
   function renderMeta(meta) {
     if (!metaNode) return;
     metaNode.replaceChildren();
-    metaNode.append(makeEl('h5', '', '条目 meta（完整字段占位）'));
+    metaNode.append(makeEl('h5', '', '条目 meta（完整字段）'));
     if (!meta || typeof meta !== 'object') {
       metaNode.append(makeEl('p', 'y-admin-storage-browser-empty', '无 meta（StorageService 未返回）'));
       return;
@@ -222,6 +223,7 @@ export function createStorageBrowser(ctx) {
       selectedNode.textContent = path;
       deleteBtn.disabled = readonly;
       deleteBtn.title = readonly ? '/system/* 只读，框架保留' : '删除该条目';
+      if (renameBtn) renameBtn.disabled = !/^\/(module|plugin)\//.test(path);
       metaNode.replaceChildren(makeEl('p', '', '读取中…'));
       valueNode.textContent = '读取中…';
       renderTree();
@@ -231,7 +233,7 @@ export function createStorageBrowser(ctx) {
       try {
         valueNode.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2) || '（空值）';
       } catch (err) {
-        valueNode.textContent = '（value 无法序列化为占位预览）';
+        valueNode.textContent = '（value 无法序列化为预览）';
         report('E_VFS_SCHEMA', 'value 预览序列化失败', err, { path });
       }
     } catch (err) {
@@ -243,6 +245,7 @@ export function createStorageBrowser(ctx) {
     selectedPath = null;
     selectedNode.textContent = '未选择条目';
     deleteBtn.disabled = true;
+    if (renameBtn) renameBtn.disabled = true;
     metaNode.replaceChildren(makeEl('p', 'y-admin-storage-browser-empty', '点选左侧条目查看 meta 与 value 预览'));
     valueNode.textContent = '—';
   }
@@ -258,7 +261,7 @@ export function createStorageBrowser(ctx) {
     }
     try {
       const usage = await emit('storage:usage', {});
-      usageNode.textContent = usage ? `占用概览：${typeof usage === 'string' ? usage : JSON.stringify(usage)}` : '占用概览：StorageService 未返回（占位）';
+      usageNode.textContent = usage ? `占用概览：${typeof usage === 'string' ? usage : JSON.stringify(usage)}` : '占用概览：StorageService 未返回';
     } catch (err) {
       usageNode.textContent = '占用概览不可用';
       report('E_VFS_BACKEND', '读取存储占用概览失败', err);
@@ -294,6 +297,61 @@ export function createStorageBrowser(ctx) {
     }
   }
 
+  /** 重命名：仅允许 /module|plugin/<id>/ 私有区，通过读+写+删实现（VFS 无 rename 命令） */
+  async function renameSelected() {
+    if (!selectedPath) return;
+    const parts = selectedPath.split('/');
+    const zone = parts[1];
+    if (zone !== 'module' && zone !== 'plugin') {
+      ctx.notify('error', '仅私有区（/module、/plugin）可重命名', { code: 'E_VFS_PERMISSION', module: COMPONENT_ID, path: selectedPath });
+      return;
+    }
+    const next = prompt('新路径（相对当前私有区，或完整 VFS 路径）：', selectedPath);
+    if (!next) return;
+    const target = next.startsWith('/') ? next : `/${zone}/${parts[2]}/${next.replace(/^\/+/, '')}`;
+    if (target === selectedPath) return;
+    if (!/^\/(module|plugin)\/[a-z0-9-]+\/[a-z0-9./-]+$/.test(target) || target.split('/')[2] !== parts[2]) {
+      ctx.notify('error', '目标路径必须属于同一私有区且符合 kebab-case', { code: 'E_VFS_PATH', module: COMPONENT_ID, target });
+      return;
+    }
+    try {
+      const value = await emit('storage:get', { path: selectedPath });
+      if (value === undefined) { ctx.notify('error', '源条目不存在', { code: 'E_NOT_FOUND', module: COMPONENT_ID }); return; }
+      const meta = await emit('storage:stat', { path: selectedPath });
+      await emit('storage:set', { path: target, value, schema: meta?.schema || 'any@1', ttl: meta?.ttl });
+      await emit('storage:del', { path: selectedPath });
+      clearSelection();
+      await refresh();
+      ctx.notify('info', `已重命名为 ${target}`, { module: COMPONENT_ID });
+    } catch (err) { report('E_VFS_BACKEND', '重命名失败', err, { path: selectedPath, target }); }
+  }
+
+  /** 上传图片：读为 data URL 存入 /cache/images/<slug>（纯本地，不上传远端） */
+  async function uploadImage() {
+    const input = document.querySelector('.y-admin-storage-browser-detail-actions input[type="file"]');
+    if (!input) return;
+    input.onchange = async () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await new Promise((res, rej) => {
+          const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej;
+          r.readAsDataURL(file);
+        });
+        const slug = file.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'upload';
+        const path = `/cache/images/${slug}-${Date.now().toString(36)}.json`;
+        await emit('storage:set', {
+          path, value: { name: file.name, mime: file.type, size: file.size, data: dataUrl },
+          schema: 'blob-wrapper@1', ttl: 30 * 86400,
+        });
+        await refresh();
+        ctx.notify('info', `已存入 ${path}`, { module: COMPONENT_ID });
+      } catch (err) { report('E_VFS_EXPORT', '图片上传失败', err); }
+      finally { input.value = ''; }
+    };
+    input.click();
+  }
+
   async function exportJson() {
     try {
       // §6.10：导出包不含 /system/*；真实打包与校验由 StorageService 完成。
@@ -306,22 +364,22 @@ export function createStorageBrowser(ctx) {
       }
       if (result == null) {
         try {
-          // §5 命令表中的 admin 级别名，作为占位回退。
+          // §5 命令表中的 admin 级别名，作为兼容回退。
           result = await emit('data:export', { scope: 'shared', prefixes });
         } catch (err) {
-          report('E_VFS_EXPORT', 'data:export 占位命令失败', err, { prefixes });
+          report('E_VFS_EXPORT', 'data:export 兼容命令失败', err, { prefixes });
         }
       }
-      exportArea.value = result == null ? '（导出占位：StorageService 未返回结果；确认已排除 /system/* 与凭据字段）' : typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+      exportArea.value = result == null ? '（导出结果：StorageService 未返回结果；确认已排除 /system/* 与凭据字段）' : typeof result === 'string' ? result : JSON.stringify(result, null, 2);
     } catch (err) {
-      report('E_VFS_EXPORT', 'JSON 导出占位失败', err);
+      report('E_VFS_EXPORT', 'JSON 导出失败', err);
     }
   }
 
   async function importJson(text) {
     try {
       const payload = JSON.parse(text);
-      // 占位级校验：格式与 entries 结构；schemaVersion / migrate 由 StorageService 执行。
+      // 基础校验：格式与 entries 结构；schemaVersion / migrate 由 StorageService 执行。
       if (!payload || payload.format !== 'yingo-vfs@1' || !Array.isArray(payload.entries)) {
         ctx.notify('error', '导入包格式不符（需 format: yingo-vfs@1 与 entries[]）', { code: 'E_VFS_EXPORT', module: COMPONENT_ID });
         return;
@@ -339,10 +397,10 @@ export function createStorageBrowser(ctx) {
         try {
           preview = await emit('data:import', { payload, dryRun: true });
         } catch (err) {
-          report('E_VFS_EXPORT', 'data:import 占位命令失败', err);
+          report('E_VFS_EXPORT', 'data:import 兼容命令失败', err);
         }
       }
-      importPreview.textContent = preview == null ? '（冲突预览占位：StorageService 未返回结果）' : typeof preview === 'string' ? preview : JSON.stringify(preview, null, 2);
+      importPreview.textContent = preview == null ? '（冲突预览：StorageService 未返回结果）' : typeof preview === 'string' ? preview : JSON.stringify(preview, null, 2);
       confirmImportBtn.disabled = false;
     } catch (err) {
       report('E_VFS_EXPORT', 'JSON 解析 / 导入预览失败', err);
@@ -361,7 +419,7 @@ export function createStorageBrowser(ctx) {
         try {
           await emit('data:import', { payload: importPayload, dryRun: false });
         } catch (err2) {
-          report('E_VFS_EXPORT', 'data:import 占位命令失败', err2);
+          report('E_VFS_EXPORT', 'data:import 兼容命令失败', err2);
         }
       }
       importPayload = null;
@@ -381,7 +439,7 @@ export function createStorageBrowser(ctx) {
     const toolbar = makeEl('div', 'y-admin-storage-browser-toolbar');
     prefixInput = makeEl('input');
     prefixInput.type = 'search';
-    prefixInput.placeholder = '按路径前缀过滤（占位）';
+    prefixInput.placeholder = '按路径前缀过滤';
     prefixInput.addEventListener('input', () => {
       try {
         renderTree();
@@ -391,7 +449,7 @@ export function createStorageBrowser(ctx) {
     });
     originInput = makeEl('input');
     originInput.type = 'search';
-    originInput.placeholder = '按 origin 过滤（占位）';
+    originInput.placeholder = '按 origin 过滤';
     originInput.addEventListener('input', () => {
       try {
         renderTree();
@@ -429,13 +487,17 @@ export function createStorageBrowser(ctx) {
     deleteBtn.addEventListener('click', () => {
       void removeSelected();
     });
-    const renameBtn = makeEl('button', '', '重命名（限私有区·占位）');
+    renameBtn = makeEl('button', '', '重命名（限私有区）');
     renameBtn.type = 'button';
     renameBtn.disabled = true;
-    const uploadBtn = makeEl('button', '', '上传（占位）');
+    renameBtn.addEventListener('click', () => { void renameSelected(); });
+    const uploadBtn = makeEl('button', '', '上传图片到 /cache/images');
     uploadBtn.type = 'button';
-    uploadBtn.disabled = true;
-    detailActions.append(deleteBtn, renameBtn, uploadBtn);
+    uploadBtn.addEventListener('click', () => { void uploadImage(); });
+    const hiddenFile = makeEl('input');
+    hiddenFile.type = 'file'; hiddenFile.accept = 'image/*'; hiddenFile.hidden = true;
+    detailActions.append(deleteBtn, renameBtn, uploadBtn, hiddenFile);
+    uploadBtn._fileInput = hiddenFile;
     detailNode.append(selectedNode, metaNode, makeEl('h5', '', 'value 预览'), valueNode, detailActions);
     body.append(treeNode, detailNode);
     rootNode.append(body);
@@ -444,7 +506,7 @@ export function createStorageBrowser(ctx) {
     rootNode.append(usageNode);
 
     const actions = makeEl('div', 'y-admin-storage-browser-actions');
-    const clearBtn = makeEl('button', '', '清理 /cache（占位）');
+    const clearBtn = makeEl('button', '', '清理 /cache');
     clearBtn.type = 'button';
     clearBtn.addEventListener('click', () => {
       void (async () => {
@@ -456,7 +518,7 @@ export function createStorageBrowser(ctx) {
         }
       })();
     });
-    const gcBtn = makeEl('button', '', '一键 GC（占位）');
+    const gcBtn = makeEl('button', '', '一键 GC');
     gcBtn.type = 'button';
     gcBtn.addEventListener('click', () => {
       void (async () => {
@@ -471,16 +533,16 @@ export function createStorageBrowser(ctx) {
     actions.append(clearBtn, gcBtn);
     rootNode.append(actions);
 
-    // JSON 导入导出占位（§6.10 / D30）。
+    // JSON 导入导出（§6.10 / D30）。
     const backup = makeEl('div', 'y-admin-storage-browser-backup');
-    backup.append(makeEl('h4', '', 'JSON 导入导出（占位）'));
+    backup.append(makeEl('h4', '', 'JSON 导入导出'));
     const exportRow = makeEl('div');
-    const exportBtn = makeEl('button', '', '导出 JSON（占位）');
+    const exportBtn = makeEl('button', '', '导出 JSON');
     exportBtn.type = 'button';
     exportBtn.addEventListener('click', () => {
       void exportJson();
     });
-    const downloadBtn = makeEl('button', '', '下载 .json（占位）');
+    const downloadBtn = makeEl('button', '', '下载 .json');
     downloadBtn.type = 'button';
     downloadBtn.disabled = true;
     exportArea = makeEl('textarea', 'y-admin-storage-browser-export');
@@ -505,14 +567,14 @@ export function createStorageBrowser(ctx) {
         }
       })();
     });
-    confirmImportBtn = makeEl('button', '', '确认导入（占位）');
+    confirmImportBtn = makeEl('button', '', '确认导入');
     confirmImportBtn.type = 'button';
     confirmImportBtn.disabled = true;
     confirmImportBtn.addEventListener('click', () => {
       void confirmImport();
     });
     importRow.append(fileInput, confirmImportBtn);
-    importPreview = makeEl('pre', 'y-admin-storage-browser-import-preview', '（冲突预览占位：先 dryRun，确认后才提交）');
+    importPreview = makeEl('pre', 'y-admin-storage-browser-import-preview', '（冲突预览：先 dryRun，确认后才提交）');
     backup.append(importRow, importPreview);
     rootNode.append(backup);
 

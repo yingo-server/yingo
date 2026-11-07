@@ -10,8 +10,9 @@ node scripts/gen-manifest.mjs
 node scripts/gen-music-manifest.mjs
 node scripts/check-spec.mjs
 
-# 本地预览（任意静态服务器，根目录指向 public/）
-python3 -m http.server 8899 --directory public
+# 本地预览（必须用自带服务器：python -m http.server 不支持 Range，
+# Chromium 播放大 MP3 会失败）
+python3 scripts/serve.py 8899
 # 打开 http://localhost:8899/
 ```
 
@@ -23,7 +24,15 @@ python3 -m http.server 8899 --directory public
 - **总线** 强类型命令 + schema 校验 + 中间件 + 事件重放，见 `public/core/bus.js`；只做 mixin，模块自决布局位置。
 - **Storage Fabric** 统一 VFS，三层介质（memory / localStorage / IndexedDB）、六区命名空间、权限、TTL GC、失效广播、schema 迁移、JSON 导入导出，见 `public/core/storage/`。
 - **三套主题** `material-3`（严格 MD3）/ `neumorphism`（新拟物）/ `lime-tabs`（自制，支持自定义背景图）。
+- **内置模块**（框架自身功能，与 `/apps/` 应用无关）：clock（右上角时间）、search（多引擎 + 本地应用/音乐聚合 + `!` 指令）、apps-grid（应用网格 + 拖拽排序）、music-player（真实播放/进度/音量/循环/随机/列表，状态持久化）、theme-manager、admin（四分区 + VFS 文件浏览器）。
 - 详细接口见 `docs/core-api.md`，完整规范与决策见 `SPEC.md`。
+
+### 音乐
+
+曲目放 `public/assets/audio/`，中文标题与作者可写在 `public/assets/audio/audio.json`，然后运行
+`node scripts/gen-music-manifest.mjs` 生成 `public/music.json`。
+播放器是框架内置模块（不是应用），通过 `music:list` / `music:play` / `music:next` 等总线命令工作，
+状态存 `/shared/music/state.json`。浏览器自动播放策略要求用户首次点击播放按钮。
 
 ## Netlify 部署
 

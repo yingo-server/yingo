@@ -14,7 +14,7 @@ const DEFAULT_ENGINES = [
   { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd={q}' }
 ];
 const ENGINE_ALIASES = { g: 'google', b: 'bing', d: 'duckduckgo', ddg: 'duckduckgo', bd: 'baidu' };
-const DIRECTIVE_HINT = '! 指令占位：!g / !ddg / !bd 指定引擎，!app 聚合应用，!music 聚合音乐，!help 查看说明';
+const DIRECTIVE_HINT = '! 指令：!g / !ddg / !bd 指定引擎，!app 聚合应用，!music 聚合音乐，!help 查看说明';
 
 let ctxRef = null;
 let rootNode = null;
@@ -122,10 +122,10 @@ function buildUi(ctx) {
 
   hintNode = makeEl('p', 'y-module-search-hint', DIRECTIVE_HINT);
 
-  // 框内聚合区（ADR-013 C）：仅占位展示本地匹配，不缓存、不持久化。
+  // 框内聚合区（ADR-013 C）：展示本地匹配结果，不缓存、不持久化。
   const aggregate = makeEl('div', 'y-module-search-aggregate');
   aggregate.append(
-    makeEl('h4', 'y-module-search-aggregate-title', '框内聚合 · 本地结果（占位）'),
+    makeEl('h4', 'y-module-search-aggregate-title', '框内聚合 · 本地结果'),
     makeEl('span', 'y-module-search-aggregate-label', '应用'),
     (appResultsNode = makeEl('ul', 'y-module-search-apps')),
     makeEl('span', 'y-module-search-aggregate-label', '音乐'),
@@ -134,19 +134,24 @@ function buildUi(ctx) {
   renderLocalResults('', 'all');
 
   const custom = makeEl('details', 'y-module-search-custom');
-  custom.append(makeEl('summary', '', '自定义引擎（占位）'));
+  custom.append(makeEl('summary', '', '自定义引擎'));
   const customRow = makeEl('div', 'y-module-search-custom-row');
   const idInput = makeEl('input');
-  idInput.placeholder = '引擎 id';
-  idInput.disabled = true;
+  idInput.placeholder = '引擎 id（kebab-case）';
   const urlInput = makeEl('input');
-  urlInput.placeholder = 'URL 模板 {q}';
-  urlInput.disabled = true;
-  const addBtn = makeEl('button', '', '添加（占位）');
+  urlInput.placeholder = 'URL 模板，含 {q}';
+  const addBtn = makeEl('button', '', '添加');
   addBtn.type = 'button';
-  addBtn.disabled = true;
+  const delSelect = makeEl('select', 'y-module-search-del-select');
+  const delBtn = makeEl('button', '', '删除');
+  delBtn.type = 'button';
   customRow.append(idInput, urlInput, addBtn);
-  custom.append(customRow, makeEl('p', '', '自定义引擎列表读取 /cache/search/engines.json（带 TTL），录入逻辑留待后续阶段。'));
+  const manageRow = makeEl('div', 'y-module-search-custom-row');
+  manageRow.append(delSelect, delBtn);
+  custom.append(customRow, manageRow, makeEl('p', '', '自定义引擎持久化到 /cache/search/engines.json（带 TTL）。'));
+  addBtn.addEventListener('click', async () => { await addCustomEngine(ctx, idInput, urlInput); });
+  delBtn.addEventListener('click', async () => { await removeCustomEngine(ctx, delSelect); });
+  rootNode._customUi = { delSelect };
 
   rootNode.append(row, hintNode, aggregate, custom);
   rootNode.addEventListener('submit', (event) => {
@@ -195,31 +200,105 @@ function buildExternalUrl(engine, query) {
   return template.replace('{q}', encodeURIComponent(query));
 }
 
-// 简单 UI 级子串匹配：仅用于占位聚合，不是业务搜索算法，也不产生任何缓存。
+// 简单 UI 级子串匹配：用于框内本地聚合，不产生任何缓存。
 function matchItems(items, query, fields) {
   const q = String(query || '').trim().toLowerCase();
   if (!q) return [];
   return items.filter((item) => fields.some((field) => String(item && item[field] != null ? item[field] : '').toLowerCase().includes(q))).slice(0, 5);
 }
 
-function fillList(target, items, labelKey, emptyText) {
+function fillList(target, items, labelKey, emptyText, kind) {
   if (!target) return;
   target.replaceChildren();
   if (!items.length) {
     target.append(makeEl('li', 'y-module-search-empty', emptyText));
     return;
   }
-  for (const item of items) target.append(makeEl('li', '', String(item[labelKey] || item.id || '未命名')));
+  for (const item of items) {
+    const li = makeEl('li', 'y-module-search-result');
+    const btn = makeEl('button', 'y-module-search-result-btn', String(item[labelKey] || item.id || '未命名'));
+    btn.type = 'button';
+    btn.addEventListener('click', () => openLocalResult(item, kind));
+    li.append(btn);
+    target.append(li);
+  }
+}
+
+/** 本地结果：应用打开链接 / 音乐通过总线播放（不跳转、不缓存） */
+function openLocalResult(item, kind) {
+  const ctx = ctxRef;
+  if (!ctx) return;
+  try {
+    if (kind === 'music') {
+      emit(ctx, 'music:play', { id: item.id }).catch((err) => report(ctx, 'E_MUSIC_PLAY', '播放失败', err));
+      return;
+    }
+    const url = item.entry || item.url || item.path;
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    else ctx.notify('warn', '该应用未配置入口链接', { code: 'E_NOT_FOUND', module: MODULE_ID, id: item.id });
+  } catch (err) { report(ctx, 'E_INTERNAL', '打开本地结果失败', err); }
 }
 
 function renderLocalResults(query, scope) {
   const q = String(query || '').replace(/^!\S+\s*/, '').trim();
   if (scope === 'all' || scope === 'apps') {
-    fillList(appResultsNode, scope === 'apps' ? matchItems(apps, q, ['name', 'id', 'description', 'tags']) : matchItems(apps, q, ['name', 'id']), 'name', '输入关键词以匹配本地应用（占位）');
+    fillList(appResultsNode, scope === 'apps' ? matchItems(apps, q, ['name', 'id', 'description', 'tags']) : matchItems(apps, q, ['name', 'id']), 'name', '输入关键词以匹配本地应用', 'apps');
   }
   if (scope === 'all' || scope === 'music') {
-    fillList(musicResultsNode, matchItems(tracks, q, ['title', 'id']), 'title', '输入关键词以匹配本地音乐（占位）');
+    fillList(musicResultsNode, matchItems(tracks, q, ['title', 'id', 'artist']), 'title', '输入关键词以匹配本地音乐', 'music');
   }
+}
+
+/** 读取 /cache/search/engines.json（带 TTL）中的自定义引擎 */
+async function readCustomEngines(ctx) {
+  try {
+    const list = await emit(ctx, 'storage:get', { path: ENGINES_PATH, fallback: [] });
+    return Array.isArray(list) ? list : [];
+  } catch (err) { report(ctx, 'E_VFS_BACKEND', '读取自定义引擎失败', err); return []; }
+}
+
+async function writeCustomEngines(ctx, list) {
+  try {
+    await emit(ctx, 'storage:set', { path: ENGINES_PATH, value: list, schema: 'engine-list@1', ttl: 7 * 86400 });
+  } catch (err) { report(ctx, 'E_VFS_BACKEND', '保存自定义引擎失败', err); }
+}
+
+async function addCustomEngine(ctx, idInput, urlInput) {
+  const id = String(idInput.value || '').trim().toLowerCase();
+  const url = String(urlInput.value || '').trim();
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(id) || !url.includes('{q}') || !/^https?:\/\//i.test(url)) {
+    ctx.notify('error', '引擎 id 需 kebab-case，URL 需为 http(s) 且含 {q}', { code: 'E_SCHEMA', module: MODULE_ID });
+    return;
+  }
+  const list = await readCustomEngines(ctx);
+  if (list.some((e) => e.id === id) || DEFAULT_ENGINES.some((e) => e.id === id)) {
+    ctx.notify('error', '引擎 id 已存在', { code: 'E_SCHEMA', module: MODULE_ID, id }); return;
+  }
+  list.push({ id, name: id, url });
+  await writeCustomEngines(ctx, list);
+  engines = [...DEFAULT_ENGINES, ...list];
+  renderEngines();
+  renderDeleteOptions(rootNode?._customUi?.delSelect, list);
+  idInput.value = ''; urlInput.value = '';
+  ctx.notify('info', `已添加引擎 ${id}`, { module: MODULE_ID });
+}
+
+async function removeCustomEngine(ctx, select) {
+  const id = select?.value;
+  if (!id) return;
+  const list = (await readCustomEngines(ctx)).filter((e) => e.id !== id);
+  await writeCustomEngines(ctx, list);
+  engines = [...DEFAULT_ENGINES, ...list];
+  renderEngines();
+  renderDeleteOptions(select, list);
+  ctx.notify('info', `已删除引擎 ${id}`, { module: MODULE_ID });
+}
+
+function renderDeleteOptions(select, list) {
+  if (!select) return;
+  select.replaceChildren();
+  if (!list.length) { const o = makeEl('option', '', '(无自定义引擎)'); o.value = ''; select.append(o); return; }
+  for (const e of list) { const o = makeEl('option', '', e.name || e.id); o.value = e.id; select.append(o); }
 }
 
 function parseDirective(raw) {
@@ -251,6 +330,7 @@ async function loadEngines(ctx) {
   }
   engines = merged;
   renderEngines();
+  renderDeleteOptions(rootNode?._customUi?.delSelect, custom);
 
   try {
     const saved = await emit(ctx, 'storage:get', { path: ENGINE_PATH, fallback: null });
@@ -301,7 +381,7 @@ async function handleSubmit(ctx) {
         return;
       }
       if (name === 'app' || name === 'music') {
-        // 框内聚合：只发过滤事件 + 占位渲染，不跳外部引擎。
+        // 框内聚合：只发过滤事件 + 渲染，不跳外部引擎。
         await emit(ctx, 'search:filter', { query: directive.query });
         renderLocalResults(directive.query, name === 'app' ? 'apps' : 'music');
         return;

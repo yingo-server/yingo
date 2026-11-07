@@ -8,6 +8,15 @@ import { boot } from './kernel.js';
 import { E } from './errors.js';
 import { reportError } from './bus.js';
 
+// 框架级模块样式：一次注入，模块自带样式仍可自行追加（ADR-005）
+(function ensureModuleStyles() {
+  if (document.getElementById('yingo-module-styles')) return;
+  const link = document.createElement('link');
+  link.id = 'yingo-module-styles'; link.rel = 'stylesheet';
+  link.href = new URL('../styles/modules.css', import.meta.url).href;
+  (document.head || document.body).appendChild(link);
+})();
+
 /* ---- 静态内置模块（子任务产出；缺失时安全降级为空） ---- */
 const MODULE_ENTRIES = [
   ['clock', '../modules/clock/index.js'],

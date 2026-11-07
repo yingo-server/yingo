@@ -1,6 +1,6 @@
 // 主题服务空壳：注册 theme:list / theme:apply / theme:bg-set 三条总线命令。
 // 当前主题持久化到 /shared/theme/current.json；第三套（lime-tabs）背景参数写 /shared/theme/bg.json。
-// 真实 token 注入、CSS 切换由 ThemeService / 主题模块负责，本模块只做注册、持久化与占位 UI。
+// 真实 token 注入、CSS 切换由 ThemeService / 主题模块负责，本模块做命令注册、持久化与状态 UI。
 // 布局自决（ADR-005）：模块内部选择挂载插槽，不依赖任何 DOM id。
 
 const MODULE_ID = 'theme-manager';
@@ -103,13 +103,13 @@ function makeEl(tag, className, text) {
 function buildUi(ctx) {
   rootNode = makeEl('details', 'y-module y-module-theme-manager');
   rootNode.dataset.moduleId = MODULE_ID;
-  rootNode.append(makeEl('summary', '', '主题与外观（服务占位）'));
+  rootNode.append(makeEl('summary', '', '主题与外观'));
 
   currentNode = makeEl('p', 'y-module-theme-manager-current', '当前主题：加载中');
   listNode = makeEl('div', 'y-module-theme-manager-list');
 
   const bgForm = makeEl('form', 'y-module-theme-manager-bg-form');
-  bgForm.append(makeEl('h4', '', '第三套背景参数（占位）'));
+  bgForm.append(makeEl('h4', '', '第三套背景参数'));
   bgUrlInput = makeEl('input');
   bgUrlInput.type = 'text';
   bgUrlInput.placeholder = '背景图 URL / VFS 路径';
@@ -144,7 +144,7 @@ function normalizeThemes(result) {
 
 function render() {
   if (!rootNode) return;
-  currentNode.textContent = `当前主题：${currentId}（占位）`;
+  currentNode.textContent = `当前主题：${currentId}`;
   listNode.replaceChildren();
   for (const theme of themes) {
     const btn = makeEl('button', 'y-module-theme-manager-item', theme.name);
@@ -161,7 +161,7 @@ function render() {
   bgTintInput.value = String(bgParams.tint || '');
 }
 
-// 命令 handler：theme:list 返回三套主题（占位清单，不实现主题渲染）。
+// 命令 handler：theme:list 返回三套主题（清单，渲染由主题模块负责）。
 async function handleList(ctx) {
   try {
     let serviceResult = null;
@@ -186,7 +186,7 @@ async function handleApply(ctx, payload) {
       return { ok: false, error: 'E_SCHEMA' };
     }
     if (!themes.some((theme) => theme.id === id)) {
-      ctx.notify('error', `未注册主题 ${id}，仅记录占位状态`, { code: 'E_NOT_FOUND', module: MODULE_ID, id });
+      ctx.notify('error', `未注册主题 ${id}，仅记录状态`, { code: 'E_NOT_FOUND', module: MODULE_ID, id });
     }
     currentId = id;
     // 只走 storage:* 总线命令，schema 由 StorageService 校验。
@@ -293,7 +293,7 @@ export default {
       }
       await restore(ctx);
 
-      // 外部（例如管理面板）改写 /shared/theme 后刷新占位展示，不重复写盘。
+      // 外部（例如管理面板）改写 /shared/theme 后刷新状态展示，不重复写盘。
       await on(ctx, 'storage:invalidate', (payload) => {
         try {
           const prefix = payload && payload.prefix ? String(payload.prefix) : '';
