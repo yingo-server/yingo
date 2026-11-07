@@ -195,8 +195,8 @@ async function handleApply(ctx, payload) {
       value: { id, appliedAt: Date.now() },
       schema: 'theme-state@1'
     });
-    const service = safeService(ctx, 'theme');
-    if (service && typeof service.apply === 'function') await service.apply(id);
+    // 实际换肤由各主题模块的 theme:apply handler 完成（本命令就是它的事件源），
+    // 此处绝不能再调 service.apply() —— 那会再次 emit('theme:apply') 造成无限递归。
     render();
     return { ok: true, id };
   } catch (err) {
@@ -215,8 +215,7 @@ async function handleBgSet(ctx, payload) {
     };
     await emit(ctx, 'storage:set', { path: BG_PATH, value, schema: 'theme-bg@1' });
     bgParams = value;
-    const service = safeService(ctx, 'theme');
-    if (service && typeof service.applyBg === 'function') await service.applyBg(value);
+    // 视觉应用由监听 theme:bg-set 的核心服务完成；此处不再经 service 二次 emit。
     render();
     return { ok: true, value: { ...value } };
   } catch (err) {
@@ -240,13 +239,10 @@ async function restore(ctx) {
   const id = saved && saved.id ? String(saved.id) : (themes.find((theme) => theme.id === 'material-3') || themes[0] || {}).id;
   if (id) {
     currentId = id;
-    // 只读恢复：委托主题服务实际应用 token，但绝不再次写盘（避免失效广播回环）。
-    try {
-      const service = safeService(ctx, 'theme');
-      if (service && typeof service.apply === 'function') await service.apply(id);
-    } catch (err) {
-      report(ctx, 'E_SCHEMA', '恢复主题时服务应用失败', err);
-    }
+    // 只读恢复：直接设主题属性（各主题模块的 CSS 挂载逻辑以 data-yingo-theme 为准）。
+    // 绝不 emit('theme:apply') —— 那会触发 handleApply 写盘 → 失效广播 → restore 的无限回环。
+    document.documentElement?.setAttribute?.('data-yingo-theme', id);
+    document.documentElement?.classList?.remove?.('sl-theme-light', 'sl-theme-dark');
   }
   try {
     let bg = await emit(ctx, 'storage:get', { path: BG_PATH, fallback: null });

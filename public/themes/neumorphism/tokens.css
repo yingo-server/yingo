@@ -1,14 +1,27 @@
-/* 新拟物：同底色双阴影、低对比、柔和凹凸。仅 token + 卡片质感。 */
+/* ============================================================
+   主题 · 新拟物 —— 皮肤差异（仅覆写全局 tokens.css 中的变量）
+   ============================================================ */
 :root[data-yingo-theme="neumorphism"] {
-  --yingo-bg: #e0e5ec; --yingo-surface: #e0e5ec;
-  --yingo-on-surface: #4a5568; --yingo-on-surface-variant: #718096;
-  --yingo-primary: #5b6b8c; --yingo-on-primary: #f7fafc;
-  --yingo-outline: rgba(163,177,198,.55); --yingo-outline-variant: rgba(255,255,255,.7);
-  --yingo-shadow: 9px 9px 18px #a3b1c6, -9px -9px 18px #fff;
-  --yingo-radius-sm: 12px; --yingo-radius-md: 18px; --yingo-radius-lg: 28px; --yingo-radius-xl: 40px;
+  --yingo-radius-sm: 12px;
+  --yingo-radius-md: 18px;
+  --yingo-radius-lg: 26px;
+  --yingo-radius-xl: 34px;
   --yingo-blur: 0px;
-  --yingo-card-bg: #e0e5ec;
-  --yingo-card-border: 1px solid rgba(255,255,255,.55);
-  --yingo-card-shadow: var(--yingo-shadow);
-  --yingo-accent-soft: rgba(91,107,140,.10);
+  --yingo-shadow-2: 9px 9px 18px #a3b1c6, -9px -9px 18px #ffffff;
+  --yingo-shadow-3: 14px 14px 28px #9fadc0, -14px -14px 28px #ffffff;
 }
+.yingo-slot--topbar, .yingo-slot--drawer,
+.y-module-search, .y-module-music-player,
+.glass, .y-notify, .yingo-drawer-toggle {
+  background: #e0e5ec;
+  border-color: rgba(255, 255, 255, .8);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--yingo-shadow-1);
+}
+.yingo-slot--topbar { box-shadow: none; border-bottom-color: rgba(163, 177, 198, .4); }
+.yingo-drawer-toggle, .y-mp-cover, .y-module-apps-grid-card { box-shadow: var(--yingo-shadow-1); }
+.yingo-drawer-toggle:hover, .y-module-apps-grid-card:hover { box-shadow: var(--yingo-shadow-2); }
+.y-module-search { box-shadow: var(--yingo-shadow-2); }
+.y-module-music-player { box-shadow: var(--yingo-shadow-2); }
+.yingo-slot--drawer { box-shadow: var(--yingo-shadow-3); }

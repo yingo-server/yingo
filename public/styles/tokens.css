@@ -1,19 +1,143 @@
-/* tokens.css — 主题无关的基础变量；视觉量一律走变量，主题只覆写 token 集合 */
+/* ============================================================
+   Yingo · Design Tokens
+   唯一事实来源：间距 / 圆角 / 字阶 / 动效 / 层级 / 布局尺寸 / 颜色
+   三套主题只覆写颜色与质感，不改结构。
+   ============================================================ */
 :root {
-  --yingo-sp-1: 4px;  --yingo-sp-2: 8px;  --yingo-sp-3: 12px;
-  --yingo-sp-4: 16px; --yingo-sp-5: 24px; --yingo-sp-6: 32px;
-  --yingo-radius-sm: 8px; --yingo-radius-md: 12px; --yingo-radius-lg: 20px; --yingo-radius-xl: 28px;
+  /* ---- 间距（4pt 栅格） ---- */
+  --yingo-sp-1: 4px;
+  --yingo-sp-2: 8px;
+  --yingo-sp-3: 12px;
+  --yingo-sp-4: 16px;
+  --yingo-sp-5: 24px;
+  --yingo-sp-6: 32px;
+  --yingo-sp-7: 48px;
+
+  /* ---- 圆角 ---- */
+  --yingo-radius-sm: 10px;
+  --yingo-radius-md: 14px;
+  --yingo-radius-lg: 20px;
+  --yingo-radius-xl: 28px;
   --yingo-radius-pill: 999px;
-  --yingo-dur-fast: .16s; --yingo-dur: .24s; --yingo-dur-slow: .4s;
+
+  /* ---- 字体 ---- */
+  --yingo-font: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --yingo-font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --yingo-fs-xs: 11px;
+  --yingo-fs-sm: 12px;
+  --yingo-fs-md: 14px;
+  --yingo-fs-lg: 16px;
+  --yingo-fs-xl: 20px;
+  --yingo-fs-hero: clamp(19px, 2.6vw, 22px);
+
+  /* ---- 动效 ---- */
+  --yingo-dur-fast: 120ms;
+  --yingo-dur: 220ms;
+  --yingo-dur-slow: 420ms;
   --yingo-ease: cubic-bezier(.2, 0, 0, 1);
-  --yingo-font: system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
-  --yingo-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --yingo-z-base: 1; --yingo-z-sticky: 100; --yingo-z-overlay: 800; --yingo-z-notify: 9000;
-  --yingo-bg: #fdfcff; --yingo-surface: rgba(255,255,255,.78);
-  --yingo-on-surface: #1b1b1f; --yingo-on-surface-variant: #5f5f66;
-  --yingo-primary: #6750a4; --yingo-on-primary: #fff;
-  --yingo-outline: rgba(0,0,0,.12); --yingo-outline-variant: rgba(0,0,0,.08);
-  --yingo-shadow: 0 6px 24px rgba(0,0,0,.12);
-  --yingo-blur: 18px;
-  --yingo-bg-image: none; --yingo-bg-blur: 18px; --yingo-bg-tint: rgba(0,0,0,.25);
+
+  /* ---- 布局尺寸 ---- */
+  --yingo-col-w: 720px;         /* 主内容列宽 */
+  --yingo-topbar-h: 64px;
+  --yingo-dock-w: 720px;        /* 音乐坞宽度 */
+  --yingo-dock-h: 88px;         /* 音乐坞占位高度 */
+  --yingo-drawer-w: 400px;
+
+  /* ---- 层级 ---- */
+  --yingo-z-topbar: 100;
+  --yingo-z-dock: 200;
+  --yingo-z-drawer: 800;
+  --yingo-z-toast: 900;
+  --yingo-z-splash: 1000;
+
+  /* ---- 质感 ---- */
+  --yingo-blur: 20px;
+
+  /* ---- 自定义背景（管理面板可写） ---- */
+  --yingo-bg-image: none;
+  --yingo-bg-blur: 0px;
+  --yingo-bg-tint: transparent;
+
+  /* ============================================================
+     颜色 · 默认 = Material Design 3（light）
+     ============================================================ */
+  --yingo-primary: #6750a4;
+  --yingo-on-primary: #ffffff;
+  --yingo-primary-soft: rgba(103, 80, 164, .10);
+  --yingo-error: #b3261e;
+
+  --yingo-bg: #f6f3fa;
+  --yingo-surface: #fffbfe;
+  --yingo-surface-2: #f3edf7;
+  --yingo-on-surface: #1d1b20;
+  --yingo-on-surface-variant: #5b5563;
+  --yingo-outline: #8b8794;
+  --yingo-outline-variant: #e5dfe9;
+  --yingo-scrim: rgba(28, 24, 35, .40);
+
+  --yingo-glass-bg: rgba(255, 251, 254, .78);
+  --yingo-glass-border: rgba(255, 255, 255, .65);
+  --yingo-shadow-1: 0 1px 2px rgba(29, 27, 32, .06), 0 2px 8px rgba(29, 27, 32, .05);
+  --yingo-shadow-2: 0 4px 12px rgba(29, 27, 32, .08), 0 12px 32px rgba(29, 27, 32, .10);
+  --yingo-shadow-3: 0 8px 24px rgba(29, 27, 32, .12), 0 24px 64px rgba(29, 27, 32, .14);
+}
+
+/* ============================================================
+   主题 · 新拟物（Neumorphism / light）
+   ============================================================ */
+:root[data-yingo-theme="neumorphism"] {
+  --yingo-primary: #5b6b8c;
+  --yingo-on-primary: #f7fafc;
+  --yingo-primary-soft: rgba(91, 107, 140, .12);
+  --yingo-error: #b3695e;
+
+  --yingo-bg: #e0e5ec;
+  --yingo-surface: #e0e5ec;
+  --yingo-surface-2: #dde2ea;
+  --yingo-on-surface: #3a4356;
+  --yingo-on-surface-variant: #6b7a90;
+  --yingo-outline: #93a2b8;
+  --yingo-outline-variant: rgba(255, 255, 255, .85);
+  --yingo-scrim: rgba(74, 85, 104, .35);
+
+  --yingo-glass-bg: rgba(224, 229, 236, .82);
+  --yingo-glass-border: rgba(255, 255, 255, .80);
+  --yingo-shadow-1: 5px 5px 10px #aeb9c8, -5px -5px 10px #ffffff;
+  --yingo-shadow-2: 9px 9px 18px #a3b1c6, -9px -9px 18px #ffffff;
+  --yingo-shadow-3: 14px 14px 28px #9fadc0, -14px -14px 28px #ffffff;
+
+  --yingo-radius-sm: 12px;
+  --yingo-radius-md: 18px;
+  --yingo-radius-lg: 26px;
+  --yingo-blur: 0px;
+}
+
+/* ============================================================
+   主题 · 青柠标签页（Lime Tabs / dark + 玻璃 + 自定义背景）
+   ============================================================ */
+:root[data-yingo-theme="lime-tabs"] {
+  --yingo-primary: #a3e635;
+  --yingo-on-primary: #142008;
+  --yingo-primary-soft: rgba(163, 230, 53, .13);
+  --yingo-error: #ff8a80;
+
+  --yingo-bg: #0c1116;
+  --yingo-surface: rgba(20, 30, 23, .72);
+  --yingo-surface-2: rgba(28, 41, 31, .60);
+  --yingo-on-surface: #ecf5e4;
+  --yingo-on-surface-variant: #9fb494;
+  --yingo-outline: rgba(163, 230, 53, .38);
+  --yingo-outline-variant: rgba(163, 230, 53, .14);
+  --yingo-scrim: rgba(4, 8, 5, .55);
+
+  --yingo-glass-bg: rgba(18, 27, 21, .66);
+  --yingo-glass-border: rgba(163, 230, 53, .16);
+  --yingo-shadow-1: 0 2px 8px rgba(0, 0, 0, .35);
+  --yingo-shadow-2: 0 8px 28px rgba(0, 0, 0, .45);
+  --yingo-shadow-3: 0 16px 48px rgba(0, 0, 0, .55);
+
+  --yingo-blur: 24px;
+  --yingo-bg-image: none;        /* 管理面板可覆盖为 url(...) */
+  --yingo-bg-blur: 18px;
+  --yingo-bg-tint: rgba(5, 12, 7, .55);
 }

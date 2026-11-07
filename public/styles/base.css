@@ -1,59 +1,216 @@
-/* base.css — reset、根容器、毛玻璃基类、插槽布局 */
+/* ============================================================
+   Yingo · Base / Reset / 全局骨架
+   ============================================================ */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; }
-body { font-family: var(--yingo-font); color: var(--yingo-on-surface); background: var(--yingo-bg); -webkit-font-smoothing: antialiased; }
-#yingo-root {
-  min-height: 100vh; display: flex; flex-direction: column; gap: var(--yingo-sp-4);
-  padding: var(--yingo-sp-4); position: relative;
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--yingo-font);
+  font-size: var(--yingo-fs-md);
+  line-height: 1.6;
+  color: var(--yingo-on-surface);
+  background: var(--yingo-bg);
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--yingo-dur), color var(--yingo-dur);
 }
-#yingo-root::before {
-  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background-image: var(--yingo-bg-image); background-size: cover; background-position: center;
-  filter: blur(var(--yingo-bg-blur)); transform: scale(1.08); opacity: .9;
+
+/* 自定义背景图层（lime-tabs / 管理面板）：独立伪元素，blur 不影响内容 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--yingo-bg-image);
+  background-size: cover;
+  background-position: center;
+  filter: blur(var(--yingo-bg-blur)) saturate(1.15);
+  transform: scale(1.06);          /* 防止 blur 边缘露白 */
+  pointer-events: none;
 }
-#yingo-root::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: var(--yingo-bg-tint); }
-.glass, .yingo-glass {
-  background: var(--yingo-surface);
-  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  border: 1px solid var(--yingo-outline-variant); border-radius: var(--yingo-radius-lg);
-  box-shadow: var(--yingo-shadow);
+body::after {                      /* 色调压暗层 */
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--yingo-bg-tint);
+  pointer-events: none;
 }
-@media (prefers-reduced-transparency: reduce) {
-  .glass, .yingo-glass { background: var(--yingo-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
-}
-.yingo-slot { display: flex; flex-direction: column; gap: var(--yingo-sp-3); min-width: 0; }
-.yingo-slot--topbar { flex-direction: row; justify-content: flex-end; align-items: center; min-height: 40px; }
-.yingo-slot--search { align-items: center; }
-.yingo-slot--apps { flex: 1; }
-.yingo-slot--music { margin-top: auto; }
-.yingo-slot--theme { flex-direction: row; flex-wrap: wrap; align-items: center; }
-/* 工具/管理抽屉：可折叠侧挂面板，默认收起，不遮挡主内容 */
-.yingo-slot--drawer {
-  position: fixed; right: 0; top: 0; bottom: 0; width: min(360px, 92vw);
-  z-index: var(--yingo-z-overlay); overflow: auto; padding: var(--yingo-sp-4);
-  background: var(--yingo-surface);
-  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
-  border-left: 1px solid var(--yingo-outline-variant);
-  box-shadow: var(--yingo-shadow);
-  transform: translateX(100%); transition: transform var(--yingo-dur) var(--yingo-ease);
-}
-.yingo-slot--drawer[data-collapsed="false"] { transform: none; }
-.yingo-slot--drawer > details { margin-bottom: var(--yingo-sp-3); }
-@media (prefers-reduced-motion: reduce) { .yingo-slot--drawer { transition: none; } }
-.yingo-drawer-toggle {
-  position: fixed; right: 16px; bottom: 76px; z-index: calc(var(--yingo-z-overlay) + 1);
-  width: 32px; height: 32px; border-radius: var(--yingo-radius-sm);
-  display: grid; place-items: center; font-size: 14px;
-  background: transparent; color: var(--yingo-on-surface);
-  border: 0; box-shadow: none;
-}
-#yingo-overlay { position: fixed; inset: 0; pointer-events: none; z-index: var(--yingo-z-overlay); }
-button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--yingo-primary); outline-offset: 2px; }
+
+img, svg, video { max-width: 100%; height: auto; }
+
+a { color: var(--yingo-primary); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
 ::selection { background: var(--yingo-primary); color: var(--yingo-on-primary); }
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--yingo-outline); border-radius: 99px; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+
+/* ---- 通用控件外观（全局唯一定义处） ---- */
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+input, textarea { background: none; }
+input:focus, textarea:focus, select:focus { outline: none; }
+:disabled { opacity: .4; cursor: not-allowed; }
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
+a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--yingo-primary);
+  outline-offset: 2px;
+}
+
+/* 系统滚动条（webkit + firefox） */
+* { scrollbar-width: thin; scrollbar-color: var(--yingo-outline-variant) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: var(--yingo-outline-variant); border-radius: 99px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* ---- 毛玻璃表面（统一质感） ---- */
+.glass {
+  background: var(--yingo-glass-bg);
+  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  border: 1px solid var(--yingo-glass-border);
+}
+
+/* ============================================================
+   页面骨架：顶栏吸顶 / 主列居中 / 音乐坞吸底 / 抽屉右侧
+   ============================================================ */
+#yingo-root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.yingo-slot { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.yingo-slot > .y-module { width: 100%; }
+
+.yingo-slot--topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--yingo-z-topbar);
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--yingo-topbar-h);
+  padding: 0 var(--yingo-sp-5);
+  background: var(--yingo-glass-bg);
+  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  border-bottom: 1px solid var(--yingo-outline-variant);
+}
+
+.yingo-slot--search { padding: var(--yingo-sp-7) var(--yingo-sp-4) var(--yingo-sp-5); }
+
+.yingo-slot--apps   { padding: 0 var(--yingo-sp-4) var(--yingo-sp-5); }
+
+.yingo-slot--music,
+.yingo-slot--theme  { padding: 0 var(--yingo-sp-4); }
+
+/* 底部留出音乐坞固定高度 */
+#yingo-root { padding-bottom: calc(var(--yingo-dock-h) + var(--yingo-sp-5)); }
+
+/* ---- 音乐坞：悬浮玻璃卡，吸底居中 ---- */
+.yingo-slot--music {
+  position: fixed;
+  bottom: calc(var(--yingo-sp-4) + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(var(--yingo-dock-w), calc(100vw - 2 * var(--yingo-sp-4)));
+  z-index: var(--yingo-z-dock);
+}
+
+/* ---- 抽屉：右侧滑入 ---- */
+.yingo-slot--drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(var(--yingo-drawer-w), 92vw);
+  z-index: var(--yingo-z-drawer);
+  padding: var(--yingo-sp-5);
+  overflow-y: auto;
+  background: var(--yingo-glass-bg);
+  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  border-left: 1px solid var(--yingo-glass-border);
+  box-shadow: var(--yingo-shadow-3);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform var(--yingo-dur) var(--yingo-ease), visibility 0s var(--yingo-dur);
+}
+.yingo-slot--drawer[data-collapsed="false"] {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--yingo-dur) var(--yingo-ease), visibility 0s;
+}
+.yingo-slot--drawer > .y-module { height: 100%; }
+
+/* 顶栏内：齿轮靠右、时钟紧邻其左（覆盖 clock 模块的内联样式） */
+.yingo-slot--topbar > .y-module-clock {
+  margin-left: auto !important;
+  margin-right: 0;
+  text-align: right !important;
+  align-items: flex-end;
+}
+.yingo-slot--topbar > .yingo-drawer-toggle { margin-left: var(--yingo-sp-3); margin-right: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .yingo-slot--drawer, body::before { transition: none; }
+}
+
+/* ---- 抽屉开关：顶栏内、时钟左侧的小圆钮 ---- */
+.yingo-drawer-toggle {
+  position: static;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  margin-right: var(--yingo-sp-3);
+  margin-left: auto;
+  border-radius: var(--yingo-radius-pill);
+  display: grid;
+  place-items: center;
+  font-size: var(--yingo-fs-md);
+  color: var(--yingo-on-surface);
+  opacity: .75;
+  transition: opacity var(--yingo-dur-fast), transform var(--yingo-dur-fast);
+}
+.yingo-drawer-toggle:hover { opacity: 1; transform: scale(1.06); }
+.yingo-drawer-toggle[aria-expanded="true"] { opacity: 1; }
+
+/* ---- 遮罩 ---- */
+#yingo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--yingo-z-drawer) - 1);
+  background: var(--yingo-scrim);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--yingo-dur), visibility 0s var(--yingo-dur);
+}
+#yingo-overlay[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--yingo-dur);
+}
+
+/* ---- 模块失败占位 ---- */
+.y-module-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 72px;
+  border: 1px dashed var(--yingo-outline);
+  border-radius: var(--yingo-radius-md);
+  color: var(--yingo-on-surface-variant);
+  font-size: var(--yingo-fs-sm);
+  cursor: pointer;
+}
+.y-module-fallback:hover { color: var(--yingo-on-surface); border-color: var(--yingo-primary); }
+
+/* ---- 窄视口 ---- */
+@media (max-width: 640px) {
+  :root { --yingo-dock-h: 108px; }
+  .yingo-slot--topbar { padding: 0 var(--yingo-sp-4); }
+  .yingo-slot--search { padding-top: var(--yingo-sp-6); }
+}

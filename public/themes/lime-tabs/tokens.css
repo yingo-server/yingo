@@ -1,17 +1,9 @@
-/* 自制「青柠标签页」：标签卡片 + 强毛玻璃 + 自定义背景图。仅 token + 卡片质感。 */
-:root[data-yingo-theme="lime-tabs"] {
-  --yingo-primary: #a3e635; --yingo-on-primary: #16260a;
-  --yingo-bg: #0d1420; --yingo-surface: rgba(22, 34, 27, .62);
-  --yingo-on-surface: #eef6e6; --yingo-on-surface-variant: #a8bd97;
-  --yingo-outline: rgba(163,230,53,.32); --yingo-outline-variant: rgba(163,230,53,.14);
-  --yingo-shadow: 0 10px 36px rgba(0,0,0,.42);
-  --yingo-radius-sm: 10px; --yingo-radius-md: 14px; --yingo-radius-lg: 22px; --yingo-radius-xl: 30px;
-  --yingo-blur: 26px;
-  --yingo-bg-image: none; --yingo-bg-blur: 18px; --yingo-bg-tint: rgba(6,16,10,.58);
-  --yingo-card-bg: var(--yingo-surface);
-  --yingo-card-border: 1px solid var(--yingo-outline);
-  --yingo-card-shadow: var(--yingo-shadow);
-  --yingo-accent-soft: rgba(163,230,53,.10);
-}
-:root[data-yingo-theme="lime-tabs"] .glass,
-:root[data-yingo-theme="lime-tabs"] .yingo-glass { border-top: 2px solid var(--yingo-primary); }
+/* ============================================================
+   主题 · 青柠标签页 —— 皮肤差异（暗色玻璃 + 自定义背景 + 青柠点缀）
+   背景图变量 --yingo-bg-image 可被管理面板覆盖。
+   ============================================================ */
+:root[data-yingo-theme="lime-tabs"] .y-module-apps-grid-card { background: var(--yingo-surface); }
+.yingo-slot--topbar { border-bottom-color: var(--yingo-outline-variant); }
+.yingo-drawer-toggle { box-shadow: 0 4px 16px rgba(0, 0, 0, .5); }
+.y-mp-cover { background: rgba(163, 230, 53, .16); }
+.y-module-apps-grid-card:hover { border-color: var(--yingo-primary); box-shadow: 0 6px 20px rgba(0, 0, 0, .5); }

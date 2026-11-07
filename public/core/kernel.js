@@ -139,7 +139,7 @@ function stageCore(options, rec) {
   for (const name of ['admin', 'settings', 'panel', 'drawer', 'sidebar', 'main']) {
     registerSlot(name, drawer);
   }
-  // 抽屉开关：浮动按钮，纯框架级 UI（不属于任何模块）
+  // 抽屉开关：放顶栏内（时钟左侧），避免与音乐坞/搜索卡等悬浮元素冲突
   const toggle = document.createElement('button');
   toggle.id = 'yingo-drawer-toggle';
   toggle.type = 'button';
@@ -153,7 +153,8 @@ function stageCore(options, rec) {
     toggle.setAttribute('aria-expanded', String(!open));
     toggle.textContent = open ? '⚙' : '✕';
   });
-  root.appendChild(toggle);
+  const topbarSlot = root.querySelector?.('.yingo-slot--topbar');
+  (topbarSlot || root).appendChild(toggle);
   rec.modules.push('bus', 'errors', 'slot:overlay', 'slot:topbar/search/apps/music/theme', 'slot:drawer(admin/settings/panel/sidebar/main)');
 }
 

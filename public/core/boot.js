@@ -21,23 +21,23 @@ import { createProgress, readCache, writeCache, preload, whenIdle, inBatches } f
 
 /* ---- 关键路径：只这几个先加载 ---- */
 const CRITICAL = [
-  ['clock', '../modules/clock/index.js?v=2'],
-  ['search', '../modules/search/index.js?v=2'],
-  ['apps-grid', '../modules/apps-grid/index.js?v=2'],
+  ['clock', '../modules/clock/index.js?v=4'],
+  ['search', '../modules/search/index.js?v=4'],
+  ['apps-grid', '../modules/apps-grid/index.js?v=4'],
 ];
 
 /* ---- 后台懒加载 ---- */
 const DEFERRED_MODULES = [
-  ['music-player', '../modules/music-player/index.js?v=2'],
-  ['theme-manager', '../modules/theme-manager/index.js?v=2'],
-  ['admin', '../modules/admin/index.js?v=2'],
+  ['music-player', '../modules/music-player/index.js?v=4'],
+  ['theme-manager', '../modules/theme-manager/index.js?v=4'],
+  ['admin', '../modules/admin/index.js?v=4'],
 ];
 const THEME_ENTRIES = [
-  ['material-3', '../themes/material-3/index.js?v=2'],
-  ['neumorphism', '../themes/neumorphism/index.js?v=2'],
-  ['lime-tabs', '../themes/lime-tabs/index.js?v=2'],
+  ['material-3', '../themes/material-3/index.js?v=4'],
+  ['neumorphism', '../themes/neumorphism/index.js?v=4'],
+  ['lime-tabs', '../themes/lime-tabs/index.js?v=4'],
 ];
-const LAYOUT_ENTRIES = [['default', '../layouts/default/index.js?v=2']];
+const LAYOUT_ENTRIES = [['default', '../layouts/default/index.js?v=4']];
 
 const MODULE_DEFAULTS = {
   level: 6, permissions: ['storage:read:shared', 'storage:write:shared', 'config:read', 'apps:read', 'music:read'],
@@ -66,14 +66,13 @@ const FALLBACK_CONFIG = {
 /* ---- 样式：一次注入三个框架级 CSS ---- */
 (function ensureStyles() {
   const list = [
-    ['yingo-module-styles', '../styles/modules.css'],
     ['yingo-progress-styles', './progressive-loader.css'],
   ];
   for (const [id, rel] of list) {
     if (document.getElementById(id)) continue;
     const l = document.createElement('link');
     l.id = id; l.rel = 'stylesheet';
-    l.href = new URL(rel, import.meta.url).href + '?v=2';
+    l.href = new URL(rel, import.meta.url).href + '?v=4';
     (document.head || document.body).appendChild(l);
   }
 })();

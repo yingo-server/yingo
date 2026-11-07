@@ -1,43 +1,11 @@
-/* music-player — 框架内置音乐模块样式（模块自带，不依赖主题） */
-.y-module-music-player { padding: var(--yingo-sp-4); display: flex; flex-direction: column; gap: var(--yingo-sp-3); }
-.y-mp-head { display: flex; align-items: center; gap: var(--yingo-sp-3); min-width: 0; }
-.y-mp-cover {
-  width: 48px; height: 48px; flex: none; display: grid; place-items: center;
-  border-radius: var(--yingo-radius-md); font-size: 22px;
-  background: var(--yingo-primary); color: var(--yingo-on-primary);
+/* ============================================================
+   Yingo · 音乐播放器模块样式（从 style.css 引入的模块级补充）
+   与 styles/modules.css 中的 .y-mp-* 配套；本文件只放模块特有微调。
+   ============================================================ */
+.y-module-music-player .y-mp-list-item .y-mp-list-index {
+  font: var(--yingo-fs-xs) var(--yingo-font-mono);
+  opacity: .5;
+  min-width: 22px;
 }
-.y-mp-info { min-width: 0; flex: 1; }
-.y-mp-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.y-mp-artist { font-size: 12px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.y-mp-controls { display: flex; align-items: center; justify-content: center; gap: var(--yingo-sp-3); }
-.y-mp-btn {
-  border: 1px solid var(--yingo-outline-variant); background: transparent; color: inherit;
-  border-radius: var(--yingo-radius-pill); width: 38px; height: 38px; font-size: 15px;
-  display: grid; place-items: center; transition: background var(--yingo-dur-fast);
-}
-.y-mp-btn:hover { background: var(--yingo-outline-variant); }
-.y-mp-btn--primary { width: 48px; height: 48px; background: var(--yingo-primary); color: var(--yingo-on-primary); border-color: transparent; font-size: 17px; }
-.y-mp-btn--small { width: 32px; height: 32px; font-size: 13px; }
-.y-mp-btn[data-on="1"] { color: var(--yingo-primary); border-color: var(--yingo-primary); }
-.y-mp-btn[data-mode="off"] { opacity: .45; }
-.y-mp-progress-row, .y-mp-vol-row { display: flex; align-items: center; gap: var(--yingo-sp-2); }
-.y-mp-time { font: 11px var(--yingo-font-mono); opacity: .75; min-width: 42px; text-align: center; }
-.y-mp-progress, .y-mp-volume { flex: 1; min-width: 0; accent-color: var(--yingo-primary); cursor: pointer; }
-.y-mp-volume { max-width: 110px; }
-.y-mp-speed {
-  border: 1px solid var(--yingo-outline-variant); border-radius: var(--yingo-radius-sm);
-  background: transparent; color: inherit; padding: 3px 6px; font-size: 11px;
-}
-.y-mp-list { max-height: 220px; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
-.y-mp-list[hidden] { display: none; }
-.y-mp-list-item {
-  display: flex; align-items: center; gap: var(--yingo-sp-2); width: 100%; text-align: left;
-  border: 0; background: transparent; color: inherit; padding: 7px 9px;
-  border-radius: var(--yingo-radius-sm); font-size: 13px;
-}
-.y-mp-list-item:hover { background: var(--yingo-outline-variant); }
-.y-mp-list-item.is-active { background: var(--yingo-primary); color: var(--yingo-on-primary); }
-.y-mp-list-index { font: 11px var(--yingo-font-mono); opacity: .6; min-width: 20px; }
-.y-mp-list-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.y-mp-list-artist { font-size: 11px; opacity: .65; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.y-mp-empty, .y-mp-status { font-size: 11px; opacity: .7; text-align: center; margin: 0; }
+.y-module-music-player .y-mp-list-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.y-module-music-player .y-mp-list-artist { font-size: var(--yingo-fs-xs); opacity: .55; }

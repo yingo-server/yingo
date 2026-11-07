@@ -1,20 +1,9 @@
-/* 严格 MD3：仅 color roles / elevation / type scale / motion token。
-   控件分级由 styles/modules.css 统一实现，本文件不写任何 button/input 规则。 */
-:root[data-yingo-theme="material-3"] {
-  --yingo-primary: #6750a4; --yingo-on-primary: #fff;
-  --yingo-primary-container: #eaddff; --yingo-on-primary-container: #21005d;
-  --yingo-secondary-container: #e8def8; --yingo-on-secondary-container: #1d192b;
-  --yingo-error: #b3261e; --yingo-on-error: #fff;
-  --yingo-bg: #fffbfe; --yingo-surface: #fffbfe; --yingo-surface-container: #f3edf7;
-  --yingo-on-surface: #1d1b20; --yingo-on-surface-variant: #49454f;
-  --yingo-outline: #79747e; --yingo-outline-variant: #cac4d0;
-  --yingo-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);
-  --yingo-radius-sm: 8px; --yingo-radius-md: 12px; --yingo-radius-lg: 20px; --yingo-radius-xl: 28px;
-  --yingo-dur-fast: 100ms; --yingo-dur: 200ms; --yingo-dur-slow: 400ms;
-  --yingo-ease: cubic-bezier(.2,0,0,1);
-  --yingo-blur: 0px;
-  --yingo-card-bg: var(--yingo-surface-container);
-  --yingo-card-border: 1px solid transparent;
-  --yingo-card-shadow: var(--yingo-shadow);
-  --yingo-accent-soft: rgba(103,80,164,.08);
-}
+/* ============================================================
+   主题 · 严格 Material Design 3 —— 皮肤差异
+   MD3 的颜色/圆角/阴影已在全局 tokens.css 作为默认值实现，
+   本文件只做 MD3 特有的强调（tonal surface、涟漪式过渡）。
+   ============================================================ */
+.y-module-apps-grid-card { transition: transform var(--yingo-dur-fast) var(--yingo-ease), box-shadow var(--yingo-dur) var(--yingo-ease); }
+.y-module-apps-grid-card:hover { transform: translateY(-2px); }
+.y-mp-btn:active, .y-module-search-submit:active { filter: brightness(.94); }
+.yingo-slot--topbar { border-bottom-color: transparent; box-shadow: var(--yingo-shadow-1); }

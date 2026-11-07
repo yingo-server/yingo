@@ -1,31 +1,66 @@
-/* progressive-loader 样式：首屏骨架与进度条（内联注入，零外部依赖） */
+/* ============================================================
+   Yingo · 启动进度条（ybp-）
+   ============================================================ */
 #yingo-boot-progress {
-  position: fixed; inset: 0; z-index: 10000;
-  display: grid; place-items: center;
-  background: var(--yingo-bg, #fffbfe);
-  color: var(--yingo-on-surface, #1b1b1f);
-  font-family: var(--yingo-font, system-ui, sans-serif);
-  transition: opacity .38s ease, visibility .38s ease;
+  position: fixed;
+  inset: 0;
+  z-index: var(--yingo-z-splash);
+  display: grid;
+  place-items: center;
+  background: var(--yingo-bg);
+  color: var(--yingo-on-surface);
+  font-family: var(--yingo-font);
+  transition: opacity .4s var(--yingo-ease), visibility .4s;
 }
 #yingo-boot-progress.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-.ybp-shell { width: min(420px, calc(100vw - 48px)); display: flex; flex-direction: column; gap: 14px; }
-.ybp-brand { font-size: 26px; font-weight: 700; letter-spacing: .12em; text-align: center; opacity: .9; }
+
+.ybp-shell {
+  width: min(420px, calc(100vw - 2 * var(--yingo-sp-6)));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--yingo-sp-4);
+}
+.ybp-brand {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-indent: .18em;      /* 视觉居中补偿 */
+  color: var(--yingo-on-surface);
+}
 .ybp-track {
-  height: 6px; border-radius: 99px; overflow: hidden;
-  background: var(--yingo-outline-variant, rgba(0,0,0,.1));
+  width: 100%;
+  height: 4px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--yingo-outline-variant);
 }
 .ybp-fill {
-  height: 100%; width: 0%; border-radius: 99px;
-  background: linear-gradient(90deg, #6750a4, #a3e635);
-  transition: width .28s cubic-bezier(.2,0,0,1);
+  height: 100%;
+  width: 0%;
+  border-radius: 99px;
+  background: var(--yingo-primary);
+  transition: width .3s var(--yingo-ease);
 }
-#yingo-boot-progress.is-error .ybp-fill { background: #b3261e; }
-.ybp-meta { display: flex; justify-content: space-between; font-size: 12px; opacity: .8; }
+.ybp-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--yingo-fs-xs);
+  color: var(--yingo-on-surface-variant);
+}
 .ybp-pct { font-variant-numeric: tabular-nums; }
 .ybp-detail {
-  font: 11px/1.5 var(--yingo-font-mono, ui-monospace, monospace);
-  opacity: .55; min-height: 2.4em; text-align: center; word-break: break-all;
+  min-height: 2.2em;
+  font: var(--yingo-fs-xs)/1.6 var(--yingo-font-mono);
+  color: var(--yingo-on-surface-variant);
+  opacity: .7;
+  text-align: center;
+  word-break: break-all;
 }
+#yingo-boot-progress.is-error .ybp-fill { background: var(--yingo-error); }
+#yingo-boot-progress.is-error .ybp-brand { color: var(--yingo-error); }
+
 @media (prefers-reduced-motion: reduce) {
   #yingo-boot-progress, .ybp-fill { transition: none; }
 }
