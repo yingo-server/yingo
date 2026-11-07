@@ -141,36 +141,38 @@ function buildWallpaperSection() {
   const grid = makeEl('div', 'y-settings-wallpapers');
   sec.append(grid);
 
-  const BUILTIN = [
-    ['aurora', '极光'], ['dusk', '暮色'], ['forest', '林间'], ['mono', '墨色'],
-  ];
-  for (const [id, name] of BUILTIN) {
-    const item = makeEl('button', 'y-settings-wp-item');
-    item.type = 'button';
-    item.style.cssText = `background:var(--yingo-wp-${id});background-size:cover`;
-    item.append(makeEl('span', '', name));
-    item.addEventListener('click', async () => {
-      try {
-        await bus('wallpaper:set', { mode: 'builtin', id, blur: 0, tint: 'transparent' });
-        await bus('wallpaper:changed', { mode: 'builtin', id, blur: 0, tint: 'transparent' });
-        markActive();
-      } catch (err) { report('E_SCHEMA', '壁纸切换失败', err); }
+  // 内置图片壁纸（index.json，构建期生成）：缩略图渲染
+  fetch('/assets/wallpapers/index.json', { cache: 'default' })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
+    .then((data) => {
+      grid.replaceChildren();
+      for (const wp of data.wallpapers || []) {
+        const item = makeEl('button', 'y-settings-wp-item');
+        item.type = 'button';
+        item.dataset.wp = wp.id;
+        item.title = wp.name;
+        item.style.background = `center / cover no-repeat url("${wp.thumb}")`;
+        item.addEventListener('click', async () => {
+          try {
+            const cfg = { mode: 'builtin', id: wp.id, blur: 0, tint: 'transparent' };
+            await bus('wallpaper:set', cfg);
+            await bus('wallpaper:changed', cfg);
+            markActive();
+            ctx.notify('info', `已切换壁纸：${wp.name}`, { module: MODULE_ID });
+          } catch (err) { report('E_SCHEMA', '壁纸切换失败', err); }
+        });
+        grid.append(item);
+      }
+      markActive();
+    })
+    .catch(() => {
+      // 清单不可用时回退四张渐变占位
+      for (const [id, name] of [['aurora', '极光'], ['dusk', '暮色'], ['forest', '林间'], ['mono', '墨色']]) {
+        const item = makeEl('button', 'y-settings-wp-item');
+        item.type = 'button'; item.dataset.wp = id; item.textContent = name;
+        grid.append(item);
+      }
     });
-    grid.append(item);
-  }
-  // CSS 渐变注入（与 wallpaper 模块的 BUILTIN 对应）
-  const style = makeEl('style');
-  style.textContent = `
-    .y-settings-wp-item[data-wp="aurora"] { background: linear-gradient(160deg,#0b1020,#1b2a4a 38%,#3d5a80 70%,#98c1d9); }
-    .y-settings-wp-item[data-wp="dusk"]   { background: linear-gradient(150deg,#2d1b3d,#5e3a5e 45%,#c76a6a 80%,#f4b896); }
-    .y-settings-wp-item[data-wp="forest"] { background: linear-gradient(165deg,#0c1a12,#1d3b2a 50%,#4a7c59 85%,#a7c957); }
-    .y-settings-wp-item[data-wp="mono"]   { background: linear-gradient(170deg,#141414,#2b2b2b 60%,#4d4d4d); }
-  `;
-  grid.append(style);
-  for (const item of grid.querySelectorAll('.y-settings-wp-item')) {
-    // 由 name 顺序对应 data-wp
-  }
-  [...grid.querySelectorAll('.y-settings-wp-item')].forEach((el, i) => el.setAttribute('data-wp', BUILTIN[i][0]));
 
   function markActive() {
     void bus('wallpaper:get', {}).then((cfg) => {

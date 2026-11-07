@@ -11,8 +11,8 @@
   <link rel="stylesheet" href="./styles/base.css?v=6">
   <link rel="stylesheet" href="./styles/modules.css?v=6">
   <link rel="stylesheet" href="./core/notification.css?v=6">
-  <!-- 内置壁纸渐变（首屏前避免白屏，壁纸模块会接管） -->
-  <style>html,body{background:#0b1020}</style>
+  <!-- 内置壁纸加载前的底色（不能盖住 z-index:-2 的壁纸层，故只给 html） -->
+  <style>html{background:#0b1020}</style>
 </head>
 <body>
   <div id="yingo-root"></div>

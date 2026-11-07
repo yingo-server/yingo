@@ -1,66 +1,38 @@
 /* ============================================================
-   Yingo · 启动进度条（ybp-）
+   YingoTab · 启动进度条（消费 v2 token）
    ============================================================ */
 #yingo-boot-progress {
-  position: fixed;
-  inset: 0;
-  z-index: var(--yingo-z-splash);
-  display: grid;
-  place-items: center;
-  background: var(--yingo-bg);
-  color: var(--yingo-on-surface);
-  font-family: var(--yingo-font);
-  transition: opacity .4s var(--yingo-ease), visibility .4s;
+  position: fixed; inset: 0;
+  z-index: var(--yt-z-splash);
+  display: grid; place-items: center;
+  background: #0b1020;      /* 与默认壁纸底色一致，衔接无闪跳 */
+  color: var(--yt-on-surface, #fff);
+  font-family: var(--yt-font);
+  transition: opacity .4s var(--yt-ease, ease), visibility .4s;
 }
 #yingo-boot-progress.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
 .ybp-shell {
-  width: min(420px, calc(100vw - 2 * var(--yingo-sp-6)));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--yingo-sp-4);
+  width: min(420px, calc(100vw - 2 * var(--yt-sp-6, 32px)));
+  display: flex; flex-direction: column; align-items: center; gap: var(--yt-sp-4, 16px);
 }
 .ybp-brand {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: .18em;
-  text-indent: .18em;      /* 视觉居中补偿 */
-  color: var(--yingo-on-surface);
+  font-size: 26px; font-weight: 700;
+  letter-spacing: .2em; text-indent: .2em;
 }
-.ybp-track {
-  width: 100%;
-  height: 4px;
-  border-radius: 99px;
-  overflow: hidden;
-  background: var(--yingo-outline-variant);
-}
+.ybp-track { width: 100%; height: 4px; border-radius: 99px; overflow: hidden; background: rgba(255,255,255,.14); }
 .ybp-fill {
-  height: 100%;
-  width: 0%;
+  height: 100%; width: 0%;
   border-radius: 99px;
-  background: var(--yingo-primary);
-  transition: width .3s var(--yingo-ease);
+  background: var(--yt-primary, #6ea8ff);
+  transition: width .3s var(--yt-ease, ease);
 }
-.ybp-meta {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--yingo-fs-xs);
-  color: var(--yingo-on-surface-variant);
-}
+.ybp-meta { width: 100%; display: flex; justify-content: space-between; font: var(--yt-label-sm, 11px); color: rgba(255,255,255,.55); }
 .ybp-pct { font-variant-numeric: tabular-nums; }
 .ybp-detail {
   min-height: 2.2em;
-  font: var(--yingo-fs-xs)/1.6 var(--yingo-font-mono);
-  color: var(--yingo-on-surface-variant);
-  opacity: .7;
-  text-align: center;
-  word-break: break-all;
+  font: var(--yt-body-sm) var(--yt-font-mono);
+  color: rgba(255,255,255,.4);
+  text-align: center; word-break: break-all;
 }
-#yingo-boot-progress.is-error .ybp-fill { background: var(--yingo-error); }
-#yingo-boot-progress.is-error .ybp-brand { color: var(--yingo-error); }
-
-@media (prefers-reduced-motion: reduce) {
-  #yingo-boot-progress, .ybp-fill { transition: none; }
-}
+#yingo-boot-progress.is-error .ybp-fill { background: var(--yt-error, #ffb4ab); }
+@media (prefers-reduced-motion: reduce) { #yingo-boot-progress, .ybp-fill { transition: none; } }

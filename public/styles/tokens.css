@@ -1,76 +1,137 @@
 /* ============================================================
-   YingoTab · Design Tokens（清风极简起始页）
-   全屏壁纸之上，玻璃胶囊浮层；亮暗随壁纸自动适配。
+   YingoTab · Design Tokens（v2）
+   设计方法学来自 Material Design 3：
+   - 五角色字阶（display/headline/title/body/label）
+   - 形状阶梯（xs/s/md/lg/xl/full），同类组件必用同档
+   - 状态层（hover 8% / pressed 10%，主色或白色叠加）
+   - 颜色角色化（surface 系列分层容器，on- 配对保证对比度）
+   视觉基因：清风暗色玻璃 + 壁纸即主题（非 MD3 配色）。
    ============================================================ */
 :root {
-  /* 间距（4pt 栅格） */
-  --yt-sp-1: 4px; --yt-sp-2: 8px; --yt-sp-3: 12px;
-  --yt-sp-4: 16px; --yt-sp-5: 24px; --yt-sp-6: 32px; --yt-sp-7: 48px;
-
-  /* 圆角（胶囊为主） */
-  --yt-radius-sm: 10px; --yt-radius-md: 16px;
-  --yt-radius-lg: 22px; --yt-radius-pill: 999px;
+  /* ---------- 字阶（display/headline/title/body/label 五角色） ---------- */
+  --yt-display-lg: 200 clamp(56px, 11vw, 96px)/1.05;            /* 时钟 */
+  --yt-headline-lg: 400 24px/1.25;                               /* 大标题 */
+  --yt-title-lg: 500 16px/1.35;                                  /* 卡片标题 */
+  --yt-title-md: 500 14px/1.35;                                  /* 列表主文字 */
+  --yt-body-lg: 400 15px/1.6;                                    /* 正文 */
+  --yt-body-md: 400 13px/1.55;                                   /* 次要正文 */
+  --yt-body-sm: 400 12px/1.5;                                    /* 辅助 */
+  --yt-label-lg: 500 13px/1.3;                                   /* 按钮文字 */
+  --yt-label-md: 500 12px/1.3;                                   /* 次按钮/徽标 */
+  --yt-label-sm: 500 11px/1.3;                                   /* 上标/角标 */
+  --yt-label-xs: 500 10px/1.3;                                   /* dock 标签 */
 
   /* 字体 */
   --yt-font: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --yt-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* 动效 */
-  --yt-dur-fast: 140ms; --yt-dur: 260ms; --yt-dur-slow: 500ms;
-  --yt-ease: cubic-bezier(.2, 0, 0, 1);
+  /* ---------- 间距（4pt 栅格） ---------- */
+  --yt-sp-1: 4px; --yt-sp-2: 8px; --yt-sp-3: 12px;
+  --yt-sp-4: 16px; --yt-sp-5: 24px; --yt-sp-6: 32px; --yt-sp-7: 48px;
 
-  /* 布局 */
+  /* ---------- 形状阶梯（同类组件必用同档，亲缘感核心） ---------- */
+  --yt-shape-xs: 8px;      /* 徽标、小标签 */
+  --yt-shape-sm: 12px;     /* 输入框、菜单项 */
+  --yt-shape-md: 16px;     /* 卡片、天气卡、弹窗内容 */
+  --yt-shape-lg: 24px;     /* 搜索胶囊外层、抽屉 */
+  --yt-shape-xl: 28px;     /* 大容器 */
+  --yt-shape-full: 999px;  /* 圆形按钮、胶囊 */
+
+  /* ---------- 组件尺寸 ---------- */
+  --yt-icon: 20px;                     /* 标准图标 */
+  --yt-icon-btn: 40px;                 /* 图标按钮（≥40 触控目标） */
+  --yt-btn-h: 40px;                    /* 按钮高度（MD3 基线） */
   --yt-clock-size: clamp(56px, 11vw, 96px);
   --yt-hero-w: min(640px, calc(100vw - 2 * var(--yt-sp-5)));
   --yt-dock-w: min(760px, calc(100vw - 2 * var(--yt-sp-4)));
   --yt-drawer-w: min(420px, 94vw);
 
-  /* 层级 */
-  --yt-z-wallpaper: -2;
-  --yt-z-tint: -1;
-  --yt-z-content: 1;
-  --yt-z-dock: 100;
-  --yt-z-popup: 800;
-  --yt-z-drawer: 900;
-  --yt-z-toast: 950;
-  --yt-z-splash: 1000;
+  /* ---------- 动效（强调式缓动：快速起步、柔和减速） ---------- */
+  --yt-dur-fast: 120ms; --yt-dur: 250ms; --yt-dur-slow: 450ms;
+  --yt-ease: cubic-bezier(.05, .7, .1, 1);
+  --yt-ease-emphasized: cubic-bezier(.3, 0, .8, .15);
+
+  /* ---------- 层级 ---------- */
+  --yt-z-wallpaper: -2; --yt-z-tint: -1; --yt-z-content: 1;
+  --yt-z-dock: 100; --yt-z-popup: 800; --yt-z-drawer: 900;
+  --yt-z-toast: 950; --yt-z-splash: 1000;
 
   /* ============================================================
-     颜色 —— 深色玻璃为基底（适配绝大多数壁纸），亮色壁纸下由
-     html[data-yingo-light] 覆写为浅色玻璃
+     颜色角色（深色玻璃基底；亮色由 [data-yingo-light] 整组翻转）
+     命名对齐 MD3 role 概念：surface 容器分层 / on- 配对 / variant 弱化
      ============================================================ */
-  --yt-text: rgba(255, 255, 255, .96);
-  --yt-text-soft: rgba(255, 255, 255, .68);
-  --yt-text-faint: rgba(255, 255, 255, .42);
-  --yt-accent: #6ea8ff;
+  /* on-surface 文字层级 */
+  --yt-on-surface: rgba(255, 255, 255, .95);
+  --yt-on-surface-variant: rgba(255, 255, 255, .66);
+  --yt-on-surface-faint: rgba(255, 255, 255, .40);
 
-  --yt-glass: rgba(22, 26, 32, .44);
-  --yt-glass-strong: rgba(16, 19, 24, .62);
-  --yt-glass-border: rgba(255, 255, 255, .14);
-  --yt-glass-hover: rgba(255, 255, 255, .10);
+  /* surface 容器阶梯（玻璃透明度 = 层级强调；MD3 的 5 档容器思想） */
+  --yt-surface-lowest: rgba(20, 24, 30, .30);   /* dock 胶囊、悬停层 */
+  --yt-surface-low: rgba(18, 22, 28, .40);      /* 搜索胶囊 */
+  --yt-surface: rgba(16, 20, 26, .50);          /* 卡片、天气 */
+  --yt-surface-high: rgba(14, 18, 24, .64);     /* 弹窗、抽屉 */
+  --yt-surface-highest: rgba(12, 16, 22, .78);  /* 诊断面板 */
 
-  --yt-shadow: 0 8px 32px rgba(0, 0, 0, .35);
-  --yt-shadow-lg: 0 16px 56px rgba(0, 0, 0, .45);
+  --yt-glass-border: rgba(255, 255, 255, .12);
+  --yt-glass-border-strong: rgba(255, 255, 255, .22);
+
+  /* primary（强调）— 冷蓝，中性壁纸上的唯一彩色 */
+  --yt-primary: #6ea8ff;
+  --yt-on-primary: #0a1526;
+  --yt-primary-container: rgba(110, 168, 255, .16);   /* tonal 按钮底 */
+  --yt-on-primary-container: #b8d4ff;
+
+  /* state layers（MD3：8% hover / 10% pressed） */
+  --yt-state-hover: rgba(255, 255, 255, .08);
+  --yt-state-pressed: rgba(255, 255, 255, .12);
+
+  /* error */
+  --yt-error: #ffb4ab;
+  --yt-error-container: rgba(147, 0, 10, .35);
+
+  /* outline（仅用于输入边界；分隔线一律 border 玻璃色） */
+  --yt-outline: rgba(255, 255, 255, .38);
+  --yt-outline-variant: rgba(255, 255, 255, .12);
+
+  /* 阴影（elevation 阶梯：同族曲线） */
+  --yt-shadow-1: 0 1px 3px rgba(0, 0, 0, .25), 0 2px 8px rgba(0, 0, 0, .18);
+  --yt-shadow-2: 0 4px 12px rgba(0, 0, 0, .30), 0 8px 24px rgba(0, 0, 0, .22);
+  --yt-shadow-3: 0 12px 40px rgba(0, 0, 0, .38), 0 24px 64px rgba(0, 0, 0, .30);
 
   --yt-blur: 22px;
-  --yt-scrim: rgba(0, 0, 0, .45);
+  --yt-scrim: rgba(0, 0, 0, .50);
+  --yt-focus: 2px solid var(--yt-primary);
 
-  /* 内置壁纸渐变（设置面板缩略图 + 壁纸模块共用） */
+  /* 内置壁纸 */
   --yt-wp-aurora: linear-gradient(160deg, #0b1020, #1b2a4a 38%, #3d5a80 70%, #98c1d9);
   --yt-wp-dusk: linear-gradient(150deg, #2d1b3d, #5e3a5e 45%, #c76a6a 80%, #f4b896);
   --yt-wp-forest: linear-gradient(165deg, #0c1a12, #1d3b2a 50%, #4a7c59 85%, #a7c957);
   --yt-wp-mono: linear-gradient(170deg, #141414, #2b2b2b 60%, #4d4d4d);
 }
 
-/* 浅色玻璃（用户在设置中切换，或未来按壁纸亮度自动） */
+/* ---------- 亮色玻璃（浅色壁纸用） ---------- */
 html[data-yingo-light] {
-  --yt-text: rgba(20, 24, 30, .96);
-  --yt-text-soft: rgba(20, 24, 30, .68);
-  --yt-text-faint: rgba(20, 24, 30, .42);
-  --yt-glass: rgba(255, 255, 255, .5);
-  --yt-glass-strong: rgba(255, 255, 255, .72);
-  --yt-glass-border: rgba(255, 255, 255, .6);
-  --yt-glass-hover: rgba(0, 0, 0, .06);
-  --yt-shadow: 0 8px 32px rgba(0, 0, 0, .12);
-  --yt-shadow-lg: 0 16px 56px rgba(0, 0, 0, .18);
+  --yt-on-surface: rgba(16, 20, 26, .95);
+  --yt-on-surface-variant: rgba(16, 20, 26, .62);
+  --yt-on-surface-faint: rgba(16, 20, 26, .38);
+  --yt-surface-lowest: rgba(255, 255, 255, .34);
+  --yt-surface-low: rgba(255, 255, 255, .46);
+  --yt-surface: rgba(255, 255, 255, .58);
+  --yt-surface-high: rgba(255, 255, 255, .74);
+  --yt-surface-highest: rgba(255, 255, 255, .88);
+  --yt-glass-border: rgba(255, 255, 255, .55);
+  --yt-glass-border-strong: rgba(255, 255, 255, .75);
+  --yt-primary: #2c5cc5;
+  --yt-on-primary: #ffffff;
+  --yt-primary-container: rgba(44, 92, 197, .12);
+  --yt-on-primary-container: #12305f;
+  --yt-state-hover: rgba(0, 0, 0, .06);
+  --yt-state-pressed: rgba(0, 0, 0, .10);
+  --yt-error: #a52a24;
+  --yt-error-container: rgba(180, 40, 30, .14);
+  --yt-outline: rgba(16, 20, 26, .42);
+  --yt-outline-variant: rgba(16, 20, 26, .14);
+  --yt-shadow-1: 0 1px 3px rgba(0, 0, 0, .10), 0 2px 8px rgba(0, 0, 0, .06);
+  --yt-shadow-2: 0 4px 12px rgba(0, 0, 0, .12), 0 8px 24px rgba(0, 0, 0, .08);
+  --yt-shadow-3: 0 12px 40px rgba(0, 0, 0, .16), 0 24px 64px rgba(0, 0, 0, .12);
 }

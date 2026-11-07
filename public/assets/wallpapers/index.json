@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "wallpapers": [
+    {
+      "id": "wp-01",
+      "name": "壁纸 01",
+      "pc": "/assets/wallpapers/pc/wp-01.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-01.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-01.webp"
+    },
+    {
+      "id": "wp-02",
+      "name": "壁纸 02",
+      "pc": "/assets/wallpapers/pc/wp-02.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-02.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-02.webp"
+    },
+    {
+      "id": "wp-03",
+      "name": "壁纸 03",
+      "pc": "/assets/wallpapers/pc/wp-03.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-03.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-03.webp"
+    },
+    {
+      "id": "wp-04",
+      "name": "壁纸 04",
+      "pc": "/assets/wallpapers/pc/wp-04.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-04.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-04.webp"
+    },
+    {
+      "id": "wp-05",
+      "name": "壁纸 05",
+      "pc": "/assets/wallpapers/pc/wp-05.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-05.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-05.webp"
+    },
+    {
+      "id": "wp-06",
+      "name": "壁纸 06",
+      "pc": "/assets/wallpapers/pc/wp-06.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-06.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-06.webp"
+    },
+    {
+      "id": "wp-07",
+      "name": "壁纸 07",
+      "pc": "/assets/wallpapers/pc/wp-07.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-07.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-07.webp"
+    },
+    {
+      "id": "wp-08",
+      "name": "壁纸 08",
+      "pc": "/assets/wallpapers/pc/wp-08.webp",
+      "mobile": "/assets/wallpapers/mobile/wp-08.webp",
+      "thumb": "/assets/wallpapers/thumb/wp-08.webp"
+    }
+  ]
+}
