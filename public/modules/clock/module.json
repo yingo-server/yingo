@@ -1,0 +1,9 @@
+{
+  "id": "clock",
+  "level": 6,
+  "entry": "./index.js",
+  "permissions": [],
+  "hooks": ["after:modules", "error:modules"],
+  "layout": "self-decided",
+  "optional": false
+}

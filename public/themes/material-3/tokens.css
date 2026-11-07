@@ -1,0 +1,22 @@
+/* 严格 MD3：color roles / elevation / state layers / type scale / motion */
+:root[data-yingo-theme="material-3"] {
+  --yingo-primary: #6750a4; --yingo-on-primary: #fff;
+  --yingo-primary-container: #eaddff; --yingo-on-primary-container: #21005d;
+  --yingo-secondary: #625b71; --yingo-on-secondary: #fff;
+  --yingo-secondary-container: #e8def8; --yingo-on-secondary-container: #1d192b;
+  --yingo-tertiary: #7d5260; --yingo-on-tertiary: #fff;
+  --yingo-error: #b3261e; --yingo-on-error: #fff;
+  --yingo-bg: #fffbfe; --yingo-surface: #fffbfe; --yingo-surface-container: #f3edf7;
+  --yingo-on-surface: #1d1b20; --yingo-on-surface-variant: #49454f;
+  --yingo-outline: #79747e; --yingo-outline-variant: #cac4d0;
+  --yingo-shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15);
+  --yingo-radius-sm: 4px; --yingo-radius-md: 8px; --yingo-radius-lg: 16px; --yingo-radius-xl: 28px;
+  --yingo-dur-fast: 100ms; --yingo-dur: 200ms; --yingo-dur-slow: 400ms;
+  --yingo-ease: cubic-bezier(.2,0,0,1);
+  --yingo-state-hover: .08; --yingo-state-focus: .10; --yingo-state-pressed: .10;
+  --yingo-blur: 0px;
+}
+:root[data-yingo-theme="material-3"] .glass,
+:root[data-yingo-theme="material-3"] .yingo-glass { background: var(--yingo-surface-container); -webkit-backdrop-filter:none; backdrop-filter:none; border-radius: var(--yingo-radius-lg); }
+:root[data-yingo-theme="material-3"] .y-module h2 { font: 500 22px/28px var(--yingo-font); }
+:root[data-yingo-theme="material-3"] .y-module button { border-radius: var(--yingo-radius-pill); border: 0; padding: 10px 24px; background: var(--yingo-primary); color: var(--yingo-on-primary); }

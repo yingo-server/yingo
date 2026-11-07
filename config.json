@@ -1,0 +1,22 @@
+{
+  "site": {
+    "title": "Yingo",
+    "description": "个人主页 / 应用门户 / 可扩展应用运行时"
+  },
+  "search": {
+    "engines": [
+      { "id": "google", "url": "https://www.google.com/search?q={q}" },
+      { "id": "bing", "url": "https://www.bing.com/search?q={q}" },
+      { "id": "duckduckgo", "url": "https://duckduckgo.com/?q={q}" },
+      { "id": "baidu", "url": "https://www.baidu.com/s?wd={q}" }
+    ],
+    "defaultEngine": "duckduckgo"
+  },
+  "themes": {
+    "default": "material-3"
+  },
+  "api": {
+    "base": "/api",
+    "cacheTtlSeconds": 300
+  }
+}

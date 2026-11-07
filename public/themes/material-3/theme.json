@@ -1,0 +1,15 @@
+{
+  "id": "material-3",
+  "name": "严格 Material Design 3",
+  "level": 4,
+  "entry": "./index.js",
+  "permissions": [
+    "config:read",
+    "storage:read:shared"
+  ],
+  "hooks": [
+    "after:storage"
+  ],
+  "layout": "self-decided",
+  "optional": false
+}

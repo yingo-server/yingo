@@ -1,0 +1,66 @@
+# Netlify 部署配置
+# 说明：API 与 SPA 映射同时写在 public/_redirects；Netlify 两处都支持，_redirects 优先级更高，
+#       因此两份规则清单保持完全一致（含防泄露 404 规则）。
+
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  # 构建期只跑两个原生 ESM 生成脚本；零第三方依赖、无打包工具
+  command = "node scripts/gen-manifest.mjs && node scripts/gen-music-manifest.mjs"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  # 三个只读函数在运行时需要读这两份构建产物与函数侧配置；显式纳入 bundle。
+  # 这些文件不在 publish 的 URL 空间里被当作源码暴露；public/ 下的产物由 CDN 静态托管。
+  included_files = [
+    "public/registry.json",
+    "public/music.json",
+    "netlify/functions/config.json"
+  ]
+
+# 1) API：只读转发到函数 bundle（必须最前）。无写端点，函数侧仅 GET/OPTIONS。
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# 2) 防泄露：这些路径都不在 publish 内，显式 404，避免被 SPA 回退成 200。
+#    /404.html 不存在时 Netlify 返回平台默认 404 页；绝不生成目录列表、绝不回退首页 200。
+[[redirects]]
+  from = "/config.json"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/config.local.json"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/netlify/functions/config.json"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/netlify/*"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/assets"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/assets/"
+  to = "/404.html"
+  status = 404
+
+# 3) SPA 回退（必须最后）；force=false：已存在的静态文件优先。
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false

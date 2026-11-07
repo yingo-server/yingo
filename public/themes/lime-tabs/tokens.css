@@ -1,0 +1,23 @@
+/* 自制「青柠标签页」：标签卡片 + 强毛玻璃 + 自定义背景图 */
+:root[data-yingo-theme="lime-tabs"] {
+  --yingo-primary: #a3e635; --yingo-on-primary: #1a2e05;
+  --yingo-bg: #0f172a; --yingo-surface: rgba(24, 38, 30, .55);
+  --yingo-on-surface: #f1f7e8; --yingo-on-surface-variant: #b6c9a3;
+  --yingo-outline: rgba(163,230,53,.35); --yingo-outline-variant: rgba(163,230,53,.18);
+  --yingo-shadow: 0 8px 32px rgba(0,0,0,.45);
+  --yingo-radius-sm: 10px; --yingo-radius-md: 14px; --yingo-radius-lg: 22px; --yingo-radius-xl: 30px;
+  --yingo-blur: 28px;
+  --yingo-bg-image: none; --yingo-bg-blur: 18px; --yingo-bg-tint: rgba(6,18,10,.55);
+}
+:root[data-yingo-theme="lime-tabs"] .glass,
+:root[data-yingo-theme="lime-tabs"] .yingo-glass {
+  background: var(--yingo-surface);
+  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.6);
+  backdrop-filter: blur(var(--yingo-blur)) saturate(1.6);
+  border: 1px solid var(--yingo-outline); border-top: 3px solid var(--yingo-primary);
+  border-radius: var(--yingo-radius-lg);
+}
+:root[data-yingo-theme="lime-tabs"] .y-module { position: relative; }
+:root[data-yingo-theme="lime-tabs"] .y-module::before { content: ""; position: absolute; left: 0; top: -3px; width: 88px; height: 3px; background: var(--yingo-primary); border-radius: 0 0 6px 6px; }
+:root[data-yingo-theme="lime-tabs"] .y-module button { border: 1px solid var(--yingo-outline); border-radius: var(--yingo-radius-sm); background: rgba(163,230,53,.12); color: var(--yingo-on-surface); padding: 8px 16px; }
+:root[data-yingo-theme="lime-tabs"] .y-module button:hover { background: rgba(163,230,53,.25); }

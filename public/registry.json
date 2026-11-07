@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-07T05:04:02.485Z",
+  "apps": [],
+  "plugins": [],
+  "themes": [
+    "material-3",
+    "neumorphism",
+    "lime-tabs"
+  ],
+  "groups": [
+    "simulation",
+    "game",
+    "tool",
+    "media",
+    "ai",
+    "social",
+    "other"
+  ]
+}

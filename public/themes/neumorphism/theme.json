@@ -1,0 +1,15 @@
+{
+  "id": "neumorphism",
+  "name": "新拟物化",
+  "level": 4,
+  "entry": "./index.js",
+  "permissions": [
+    "config:read",
+    "storage:read:shared"
+  ],
+  "hooks": [
+    "after:storage"
+  ],
+  "layout": "self-decided",
+  "optional": false
+}

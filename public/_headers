@@ -1,0 +1,50 @@
+# Yingo 逐路径响应头（Netlify _headers）
+# 目录列表：Netlify 无目录索引文件即 404，且 _redirects 对目录路径显式返回 404；
+# 本文件再用 nosniff / CSP / 无索引标记收紧，不部署任何自动生成的目录页。
+# publish 内不存在任何 config.json；下列路径由 _redirects 返回 404，此处仅补 no-store / noindex。
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Access-Control-Allow-Origin: *
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; worker-src 'none'; manifest-src 'self'; form-action 'self' https:;
+  Cache-Control: public, max-age=0, must-revalidate
+
+/api/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Access-Control-Allow-Headers: Content-Type
+  Access-Control-Max-Age: 86400
+  Access-Control-Expose-Headers: Allow
+  Allow: GET,OPTIONS
+  Vary: Origin
+  Cache-Control: public, max-age=300
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
+
+/assets/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+  Timing-Allow-Origin: *
+
+/config.json
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
+
+/config.local.json
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
+
+/netlify/functions/config.json
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'

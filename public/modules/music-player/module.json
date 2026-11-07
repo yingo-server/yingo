@@ -1,0 +1,9 @@
+{
+  "id": "music-player",
+  "level": 6,
+  "entry": "./index.js",
+  "permissions": ["music:read", "music:play", "storage:write:shared"],
+  "hooks": ["after:modules", "error:modules"],
+  "layout": "self-decided",
+  "optional": false
+}

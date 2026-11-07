@@ -1,0 +1,38 @@
+/* base.css — reset、根容器、毛玻璃基类、插槽布局 */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { font-family: var(--yingo-font); color: var(--yingo-on-surface); background: var(--yingo-bg); -webkit-font-smoothing: antialiased; }
+#yingo-root {
+  min-height: 100vh; display: flex; flex-direction: column; gap: var(--yingo-sp-4);
+  padding: var(--yingo-sp-4); position: relative;
+}
+#yingo-root::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image: var(--yingo-bg-image); background-size: cover; background-position: center;
+  filter: blur(var(--yingo-bg-blur)); transform: scale(1.08); opacity: .9;
+}
+#yingo-root::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: var(--yingo-bg-tint); }
+.glass, .yingo-glass {
+  background: var(--yingo-surface);
+  -webkit-backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--yingo-blur)) saturate(1.4);
+  border: 1px solid var(--yingo-outline-variant); border-radius: var(--yingo-radius-lg);
+  box-shadow: var(--yingo-shadow);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .yingo-glass { background: var(--yingo-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.yingo-slot { display: flex; flex-direction: column; gap: var(--yingo-sp-3); min-width: 0; }
+.yingo-slot--topbar { flex-direction: row; justify-content: flex-end; align-items: center; min-height: 40px; }
+.yingo-slot--search { align-items: center; }
+.yingo-slot--apps { flex: 1; }
+.yingo-slot--music { margin-top: auto; }
+.yingo-slot--sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: 320px; z-index: var(--yingo-z-overlay); }
+#yingo-overlay { position: fixed; inset: 0; pointer-events: none; z-index: var(--yingo-z-overlay); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--yingo-primary); outline-offset: 2px; }
+::selection { background: var(--yingo-primary); color: var(--yingo-on-primary); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--yingo-outline); border-radius: 99px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }

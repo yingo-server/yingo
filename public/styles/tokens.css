@@ -1,0 +1,19 @@
+/* tokens.css — 主题无关的基础变量；视觉量一律走变量，主题只覆写 token 集合 */
+:root {
+  --yingo-sp-1: 4px;  --yingo-sp-2: 8px;  --yingo-sp-3: 12px;
+  --yingo-sp-4: 16px; --yingo-sp-5: 24px; --yingo-sp-6: 32px;
+  --yingo-radius-sm: 8px; --yingo-radius-md: 12px; --yingo-radius-lg: 20px; --yingo-radius-xl: 28px;
+  --yingo-radius-pill: 999px;
+  --yingo-dur-fast: .16s; --yingo-dur: .24s; --yingo-dur-slow: .4s;
+  --yingo-ease: cubic-bezier(.2, 0, 0, 1);
+  --yingo-font: system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
+  --yingo-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --yingo-z-base: 1; --yingo-z-sticky: 100; --yingo-z-overlay: 800; --yingo-z-notify: 9000;
+  --yingo-bg: #fdfcff; --yingo-surface: rgba(255,255,255,.78);
+  --yingo-on-surface: #1b1b1f; --yingo-on-surface-variant: #5f5f66;
+  --yingo-primary: #6750a4; --yingo-on-primary: #fff;
+  --yingo-outline: rgba(0,0,0,.12); --yingo-outline-variant: rgba(0,0,0,.08);
+  --yingo-shadow: 0 6px 24px rgba(0,0,0,.12);
+  --yingo-blur: 18px;
+  --yingo-bg-image: none; --yingo-bg-blur: 18px; --yingo-bg-tint: rgba(0,0,0,.25);
+}
