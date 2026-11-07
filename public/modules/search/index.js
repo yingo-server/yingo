@@ -193,7 +193,8 @@ export default {
     inputNode.setAttribute('autocapitalize', 'off');
     inputNode.setAttribute('spellcheck', 'false');
 
-    const submitBtn = makeEl('button', 'y-search-submit', '→');
+    const submitBtn = makeEl('button', 'y-search-submit');
+    submitBtn.innerHTML = '<img src="./assets/icons/search.svg" alt="" style="width:18px;height:18px;filter:invert(1)">';
     submitBtn.type = 'submit';
     submitBtn.setAttribute('aria-label', '搜索');
 

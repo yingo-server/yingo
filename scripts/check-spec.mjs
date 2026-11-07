@@ -12,6 +12,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const NAME_OK = /^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+)*$/;
 const SPECIAL = new Set(['.gitignore', '_headers', '_redirects', 'SPEC.md', 'README.md', 'LICENSE']);
+// 固化的第三方图标保留上游命名（snake_case），便于溯源与同步上游更新
+const ICON_VENDOR = p => p.includes('/assets/icons/');
 const STORAGE_API = /\b(localStorage|sessionStorage|indexedDB|caches)\s*\./;
 // Kernel 启动之前必须能用缓存（否则首屏前无法快速恢复），仅这两个文件是受控例外。
 // 其余任何模块/主题/插件直接碰原生存储一律视为违规。
@@ -40,7 +42,7 @@ for (const p of files) {
   const rel = relative(ROOT, p).replace(/\\/g, '/');
   const base = p.split('/').pop();
   // 1) 命名（SPECIAL 白名单 + 中文名单独报）
-  if (!SPECIAL.has(base) && !NAME_OK.test(base)) problems.push(`[命名] ${rel}`);
+  if (!SPECIAL.has(base) && !NAME_OK.test(base) && !ICON_VENDOR(rel)) problems.push(`[命名] ${rel}`);
   if (/[\u4e00-\u9fff]/.test(base)) problems.push(`[中文文件名] ${rel}`);
   if (/\.(bak|tmp|swp)$/i.test(base)) problems.push(`[临时/备份文件] ${rel}`);
   let text = '';

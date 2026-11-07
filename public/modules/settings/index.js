@@ -20,6 +20,8 @@ async function bus(cmd, payload) {
   const r = ctxRef.bus.emit(cmd, payload);
   return r && typeof r.then === 'function' ? await r : r;
 }
+import { renderIcon } from '../../core/icons.js';
+
 function makeEl(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;

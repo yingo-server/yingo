@@ -15,7 +15,7 @@
 import { emit } from './bus.js';
 import { makeError, E } from './errors.js';
 
-const CACHE_PATH = '/system/repos-manifest.json';
+const CACHE_PATH = '/cache/repos-manifest.json';   // /cache/* 可被设置面板清理，带 TTL
 const SCHEMA = 'manifest-mirror@1';
 const TTL_SECONDS = 30 * 60;        // 30 分钟
 
@@ -129,7 +129,9 @@ function stripQuotes(s) {
 async function fetchRepo(repo, signal) {
   const ymlUrl = buildYmlUrl(repo);
   const base = buildBaseFor(repo);
-  const res = await fetch(ymlUrl, { cache: 'default', signal });
+  // cache-busting：CDN/浏览器缓存新鲜度由 VFS TTL 管理，网络层总是取最新
+  const bust = ymlUrl + (ymlUrl.includes('?') ? '&' : '?') + 'cb=' + Math.floor(Date.now() / 600000); // 10min 粒度，兼顾缓存命中
+  const res = await fetch(bust, { cache: 'default', signal });
   if (!res.ok) throw makeError(E.E_UPSTREAM, `拉取失败 ${res.status}: ${ymlUrl}`, { url: ymlUrl });
   const text = await res.text();
   const parsed = parseYml(text);
@@ -187,11 +189,13 @@ export async function loadRepos(repos = DEFAULT_REPOS) {
       errors.push({ url: repo.url, mode: repo.mode, message: err?.message || String(err) });
     }
   }));
-  // 失败的仓库回退：尝试上次成功缓存的整体清单
+  // 失败的仓库回退：尝试上次成功缓存的整体清单（stale-while-revalidate 语义）
   let cached = null;
   try { cached = await emit('storage:get', { path: CACHE_PATH, fallback: null }); } catch { /* noop */ }
   const valid = list.filter(Boolean);
   if (!valid.length && cached?.merged) {
+    // 有缓存但全部拉取失败：返回缓存，并后台尝试一次刷新
+    setTimeout(() => { void loadRepos(repos).catch(() => {}); }, 1500);
     return { merged: cached.merged, errors, fromCache: true };
   }
   const merged = mergeManifests(valid);

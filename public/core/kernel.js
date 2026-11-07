@@ -146,12 +146,14 @@ function stageCore(options, rec) {
   toggle.className = 'yingo-drawer-toggle glass';
   toggle.setAttribute('aria-label', '打开管理面板');
   toggle.setAttribute('aria-expanded', 'false');
-  toggle.textContent = '⚙';
+  toggle.innerHTML = '<img src="./assets/icons/settings-2.svg" alt="" style="width:18px;height:18px;filter:invert(1);pointer-events:none">';
   toggle.addEventListener('click', () => {
     const open = drawer.getAttribute('data-collapsed') === 'false';
     drawer.setAttribute('data-collapsed', open ? 'true' : 'false');
     toggle.setAttribute('aria-expanded', String(!open));
-    toggle.textContent = open ? '⚙' : '✕';
+    toggle.innerHTML = open
+      ? '<img src="./assets/icons/settings-2.svg" alt="" style="width:18px;height:18px;filter:invert(1);pointer-events:none">'
+      : '<img src="./assets/icons/x.svg" alt="" style="width:18px;height:18px;filter:invert(1);pointer-events:none">';
   });
   const topbarSlot = root.querySelector?.('.yingo-slot--topbar');
   (topbarSlot || root).appendChild(toggle);

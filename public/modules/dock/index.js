@@ -23,6 +23,8 @@ async function bus(cmd, payload) {
   const r = ctxRef.bus.emit(cmd, payload);
   return r && typeof r.then === 'function' ? await r : r;
 }
+import { renderIcon } from '../../core/icons.js';
+
 function makeEl(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -67,7 +69,9 @@ function render(apps) {
     btn.type = 'button';
     btn.title = app.name || app.id;
     btn.dataset.appId = app.id || '';
-    btn.append(makeEl('span', 'y-dock-icon', app.icon || FALLBACK_ICON));
+    const iconSlot = makeEl('span', 'y-dock-icon');
+    btn.append(iconSlot);
+    void renderIcon(iconSlot, app.icon, { size: 22, title: app.name });
     btn.append(makeEl('span', 'y-dock-name', app.name || app.id));
     btn.addEventListener('click', () => openApp(app));
     listNode.append(btn);
@@ -173,7 +177,8 @@ export default {
     rootNode = makeEl('section', 'y-module y-dock');
     rootNode.dataset.moduleId = MODULE_ID;
     listNode = makeEl('div', 'y-dock-list glass');
-    const musicToggle = makeEl('button', 'y-dock-music-toggle', '♫');
+    const musicToggle = makeEl('button', 'y-dock-music-toggle');
+    musicToggle.innerHTML = '<img src="./assets/icons/music.svg" alt="" style="width:18px;height:18px;filter:invert(1)">';
     musicToggle.type = 'button';
     musicToggle.title = '音乐';
     musicToggle.setAttribute('aria-label', '音乐播放器');

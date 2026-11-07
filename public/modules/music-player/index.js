@@ -93,7 +93,7 @@ function buildUi() {
 
   const head = makeEl('div', 'y-mp-head');
   const cover = makeEl('div', 'y-mp-cover');
-  cover.textContent = musicIcon('note');
+  cover.innerHTML = musicIcon('note');
   const info = makeEl('div', 'y-mp-info');
   const title = makeEl('div', 'y-mp-title', '未选择曲目');
   const artist = makeEl('div', 'y-mp-artist', '音乐模块 · 就绪');
@@ -168,11 +168,11 @@ function syncUi() {
   const t = tracks[currentIndex];
   ui.title.textContent = t ? (t.title || t.id) : '未选择曲目';
   ui.artist.textContent = t ? (t.artist || '本地音乐') : '音乐模块 · 就绪';
-  ui.btnPlay.textContent = audio && !audio.paused ? musicIcon('pause') : musicIcon('play');
+  ui.btnPlay.innerHTML = audio && !audio.paused ? musicIcon('pause') : musicIcon('play');
   ui.btnShuffle.dataset.on = shuffle ? '1' : '0';
-  ui.btnRepeat.textContent = musicIcon(repeatMode === 'one' ? 'repeat-one' : 'repeat');
+  ui.btnRepeat.innerHTML = musicIcon(repeatMode === 'one' ? 'repeat-one' : 'repeat');
   ui.btnRepeat.dataset.mode = repeatMode;
-  ui.btnMute.textContent = musicIcon(muted || volume === 0 ? 'mute' : 'volume');
+  ui.btnMute.innerHTML = musicIcon(muted || volume === 0 ? 'mute' : 'volume');
   ui.timeNow.textContent = fmt(audio?.currentTime || 0);
   ui.timeTotal.textContent = Number.isFinite(audio?.duration) && audio.duration > 0 ? fmt(audio.duration) : '--:--';
   if (!isSeeking && audio && Number.isFinite(audio.duration) && audio.duration > 0) {

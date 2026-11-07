@@ -82,6 +82,15 @@ widgets: []             # 预留：中部组件（天气/热搜等）
 
 详见 [SPEC.md](SPEC.md) 与 [docs/core-api.md](docs/core-api.md)。
 
+## Acknowledgements
+
+- [Tabler Icons](https://github.com/tabler/tabler-icons)（MIT）— 框架 UI 控件图标
+- [Lawnicons](https://github.com/LawnchairLauncher/lawnicons) by the Lawnchair team（Apache-2.0）— 框架标识、翻译应用图标，及 `lawnicons:` 图标协议的数据源（10240+ 单色描边 SVG）
+- [Open-Meteo](https://open-meteo.com/) — 免费无 key 天气数据
+- [Bilibili Index-Translate](https://github.com/IndexTeam/Index-TTS) 团队 — 翻译模型接口
+
+完整图标来源与授权见 [public/assets/icons/README.md](public/assets/icons/README.md)。
+
 ## License
 
 Apache-2.0
