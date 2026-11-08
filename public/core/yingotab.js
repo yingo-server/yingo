@@ -133,7 +133,17 @@ async function fetchRepo(repo, signal, force = false) {
   // 新鲜度由 VFS 的 30min TTL 缓存负责；显式 reload 时追加时间戳强制绕开所有缓存层。
   const bustParam = 'cb=' + Date.now() + (force ? '&f=' + Math.random().toString(36).slice(2, 8) : '');
   const bust = ymlUrl + (ymlUrl.includes('?') ? '&' : '?') + bustParam;
-  const res = await fetch(bust, { cache: 'default', signal });
+  // 8s 超时：CDN 不可达时尽快失败，让上层走缓存回退（国内直连 jsDeliv 常见 30s+ 挂起）
+  const timer = new AbortController();
+  const tid = setTimeout(() => timer.abort(), 8000);
+  const onAbort = () => {};
+  signal?.addEventListener('abort', () => timer.abort());
+  let res;
+  try {
+    res = await fetch(bust, { cache: 'default', signal: timer.signal });
+  } finally {
+    clearTimeout(tid);
+  }
   if (!res.ok) throw makeError(E.E_UPSTREAM, `拉取失败 ${res.status}: ${ymlUrl}`, { url: ymlUrl });
   const text = await res.text();
   const parsed = parseYml(text);

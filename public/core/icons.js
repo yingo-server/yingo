@@ -1,10 +1,12 @@
 /**
- * icons.js — 统一图标解析与渲染
+ * icons.js — 统一图标解析与渲染（v2：内联优先，网络仅为增强）
  *
- * 解析回退链：lawnicons:<name> → 固化资产名 → https URL → emoji → 默认占位
+ * 回退链：内联表（零网络，肯定显示）→ lawnicons: CDN（增强）→ URL → emoji → 🧩
  * 渲染：SVG 内联（stroke 继承 currentColor），emoji 原样文本。
  * 暗色壁纸（默认）下描边图标反色显示；html[data-yingo-light] 时正常色。
  */
+
+import { INLINE_ICONS } from './inline-icons.js';
 
 const BASE = new URL('../assets/icons/', import.meta.url).href;
 const LAWNICONS_CDN = 'https://cdn.jsdelivr.net/gh/LawnchairLauncher/lawnicons@main/svgs/';
@@ -18,16 +20,23 @@ function isEmoji(s) {
   return /\p{Extended_Pictographic}/u.test(s);
 }
 
-/** 解析 icon 字段 → { type, src }；type: 'inline' | 'img' | 'emoji' | 'none' */
+/** 解析 icon 字段 → { type, src }；type: 'inline' | 'lawnicons' | 'img' | 'emoji' | 'none' */
 export function resolveIcon(icon) {
   const raw = String(icon ?? '').trim();
   if (!raw) return { type: 'none', src: '🧩' };
   if (raw.startsWith('lawnicons:')) {
-    return { type: 'lawnicons', src: LAWNICONS_CDN + encodeURIComponent(raw.slice(10).trim()) + '.svg' };
+    const name = raw.slice(10).trim();
+    // 内联表命中（大小写/连字符容错）→ 零网络
+    if (INLINE_ICONS[name]) return { type: 'inline', src: INLINE_ICONS[name] };
+    const alias = Object.keys(INLINE_ICONS).find((k) => k.replace(/[-_]/g, '') === name.replace(/[-_]/g, ''));
+    if (alias) return { type: 'inline', src: INLINE_ICONS[alias] };
+    return { type: 'lawnicons', src: LAWNICONS_CDN + encodeURIComponent(name) + '.svg' };
   }
   if (/^https?:\/\//.test(raw)) return { type: 'img', src: raw };
   if (isEmoji(raw)) return { type: 'emoji', src: raw };
-  return { type: 'asset', src: BASE + raw.replace(/^assets\/icons\//, '') + (raw.endsWith('.svg') ? '' : '.svg') };
+  const assetName = raw.replace(/^assets\/icons\//, '').replace(/\.svg$/, '');
+  if (INLINE_ICONS[assetName]) return { type: 'inline', src: INLINE_ICONS[assetName] };
+  return { type: 'asset', src: BASE + assetName + '.svg' };
 }
 
 async function fetchText(url) {
@@ -75,8 +84,8 @@ export async function renderIcon(container, icon, { size = 22, title } = {}) {
     return span;
   }
 
-  // lawnicons / asset / inline：拉 SVG 文本内联
-  const text = await fetchText(src);
+  // inline：零网络直接渲染；lawnicons / asset：拉 SVG 文本内联（失败回退 emoji）
+  const text = type === 'inline' ? src : await fetchText(src);
   if (text) {
     const holder = document.createElement('span');
     holder.innerHTML = makeCurrentColor(text);
