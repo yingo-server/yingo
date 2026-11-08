@@ -13,10 +13,10 @@ const GROUPS = ['dock', 'grid'];
 /** 应用/音乐合并清单（loadRepos 结果缓存在内存，避免每次命令都拉网络） */
 let manifestCache = null;
 
-async function getManifest(force = false) {
+async function getManifest(force = false, networkForce = false) {
   if (!force && manifestCache) return manifestCache;
   const repos = await getUserRepos();
-  const { merged, errors, fromCache } = await loadRepos(repos);
+  const { merged, errors, fromCache } = await loadRepos(repos, networkForce);
   manifestCache = merged;
   if (errors?.length) {
     emit('notify:push', {
@@ -45,7 +45,7 @@ export function initAppServices(options = {}) {
 
   on('apps:reload', async () => {
     manifestCache = null;
-    return getManifest(true);
+    return getManifest(true, true);
   });
 
   /* ---- 音乐清单（来自内容仓库合并） ---- */
@@ -93,7 +93,7 @@ export function initAppServices(options = {}) {
     }
     await emit('storage:set', { path: '/shared/repos.json', value: { repos }, schema: 'user-config@1' });
     manifestCache = null;    // 立即失效，下次 apps:list 重新拉取
-    return getManifest(true);
+    return getManifest(true, true);
   });
 
   /* ---- 壁纸即主题 ---- */

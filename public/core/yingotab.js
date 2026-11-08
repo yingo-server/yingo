@@ -126,11 +126,13 @@ function stripQuotes(s) {
 
 /* ---------------- 拉取 + 合并 ---------------- */
 
-async function fetchRepo(repo, signal) {
+async function fetchRepo(repo, signal, force = false) {
   const ymlUrl = buildYmlUrl(repo);
   const base = buildBaseFor(repo);
-  // cache-busting：CDN/浏览器缓存新鲜度由 VFS TTL 管理，网络层总是取最新
-  const bust = ymlUrl + (ymlUrl.includes('?') ? '&' : '?') + 'cb=' + Math.floor(Date.now() / 600000); // 10min 粒度，兼顾缓存命中
+  // cache-busting：CDN 节点缓存会延迟新清单生效，用分钟粒度 query 绕开浏览器缓存，
+  // 并在 reload 命令（设置面板「重新拉取」）时强制全量刷新
+  const bustParam = 'cb=' + Math.floor(Date.now() / 600000) + (force ? '&f=' + Date.now() : '');
+  const bust = ymlUrl + (ymlUrl.includes('?') ? '&' : '?') + bustParam;
   const res = await fetch(bust, { cache: 'default', signal });
   if (!res.ok) throw makeError(E.E_UPSTREAM, `拉取失败 ${res.status}: ${ymlUrl}`, { url: ymlUrl });
   const text = await res.text();
@@ -176,12 +178,12 @@ export function mergeManifests(list) {
  * @param {Array<{url,mode,proxy?}>} repos
  * @returns {{ merged, errors[] }}
  */
-export async function loadRepos(repos = DEFAULT_REPOS) {
+export async function loadRepos(repos = DEFAULT_REPOS, force = false) {
   const list = [];
   const errors = [];
   await Promise.all(repos.map(async (repo, i) => {
     try {
-      const m = await fetchRepo(repo);
+      const m = await fetchRepo(repo, undefined, force);
       m.__source = repo.url;
       list[i] = m;
     } catch (err) {
