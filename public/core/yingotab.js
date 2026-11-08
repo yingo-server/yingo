@@ -129,9 +129,9 @@ function stripQuotes(s) {
 async function fetchRepo(repo, signal, force = false) {
   const ymlUrl = buildYmlUrl(repo);
   const base = buildBaseFor(repo);
-  // cache-busting：CDN 节点缓存会延迟新清单生效，用分钟粒度 query 绕开浏览器缓存，
-  // 并在 reload 命令（设置面板「重新拉取」）时强制全量刷新
-  const bustParam = 'cb=' + Math.floor(Date.now() / 600000) + (force ? '&f=' + Date.now() : '');
+  // 每次页面加载使用唯一 query（jsDeliv/浏览器节点都不会返回旧清单）。
+  // 新鲜度由 VFS 的 30min TTL 缓存负责；显式 reload 时追加时间戳强制绕开所有缓存层。
+  const bustParam = 'cb=' + Date.now() + (force ? '&f=' + Math.random().toString(36).slice(2, 8) : '');
   const bust = ymlUrl + (ymlUrl.includes('?') ? '&' : '?') + bustParam;
   const res = await fetch(bust, { cache: 'default', signal });
   if (!res.ok) throw makeError(E.E_UPSTREAM, `拉取失败 ${res.status}: ${ymlUrl}`, { url: ymlUrl });
